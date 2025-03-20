@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: ../../
+      dockerfile: ./docker/dev/Dockerfile
+    container_name: Prototype-P6.dev
+    env_file:
+      - ../../.env
+    ports:
+      - "3000:3000"
+    command: npm run dev
+
+    volumes:
+      - ../../src:/usr/src/app/src
+    stdin_open: true
+    tty: true
