@@ -1,29 +1,35 @@
 # docker\dev\Dockerfile
-# for js
-FROM node:18-bullseye
 
-# Install Python for huggingface
+# 1: Build the application
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# 2: Install Python for huggingface
 RUN apt-get update && apt-get install -y python3 python3-pip
 
-# Create app directory
+# 3: Set working directory
 WORKDIR /usr/src/app
 
-# Copy Node.js package files
-COPY package*.json /usr/src/app/
+# 4. Copy and restore the .NET project files first
+COPY *.csproj ./
+RUN dotnet restore
 
-# Install Node.js dependencies
-RUN npm install
-
-# Copy Python requirements
+# 5: Copy Python requirements
 COPY ./docker/dev/requirements.txt /usr/src/app/
 
-# Install Python dependencies
+# 6: Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
-COPY . /usr/src/app
+# 7:  Copy the rest of the C# source code
+COPY . .
 
-# Expose the Node.js port
-EXPOSE 3000
+# 8. Build your .NET application
+RUN dotnet build -c Release --no-restore
 
-CMD [ "npm", "start" ]
+# 9. Publish the build to a separate folder
+RUN dotnet publish -c Release -o /app/publish
+
+# 13. Expose the port of C# app
+EXPOSE 80
+
+# 14. Specify the DLL to run
+ENTRYPOINT ["dotnet", "backend.dll"]
