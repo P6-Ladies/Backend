@@ -8,19 +8,13 @@ namespace backend.Security.Authorization;
 
 public class OwnDataRequirement : IAuthorizationRequirement;
 
-public class OwnDataAuthorizationHandler : AuthorizationHandler<OwnDataRequirement>
+public class OwnDataAuthorizationHandler(
+    IHttpContextAccessor httpContextAccessor,
+    UserManager<User> userManager) : AuthorizationHandler<OwnDataRequirement>
 {
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly UserManager<User> _userManager;
-    
-    public OwnDataAuthorizationHandler(
-        IHttpContextAccessor httpContextAccessor, 
-        UserManager<User> userManager)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _userManager = userManager;
-    }
-    
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly UserManager<User> _userManager = userManager;
+
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         OwnDataRequirement requirement)
