@@ -25,7 +25,7 @@ namespace backend.Extensions
 
         public static IServiceCollection ConfigureIdentity(this IServiceCollection services)
         {
-            services.AddIdentity<User, IdentityRole>(options =>
+            services.AddIdentity<User, IdentityRole<int>>(options =>
             {
                 // Configure password requirements
                 options.Password.RequireDigit = true;

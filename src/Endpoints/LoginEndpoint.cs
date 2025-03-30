@@ -1,5 +1,4 @@
 // src\Endpoints\LoginEndpoint.cs
-
 using backend.Security.Configuration;
 using backend.Entities.Users;
 using backend.Entities.Users.DTOs;
@@ -28,7 +27,7 @@ namespace backend.Endpoints
                     var signIn = await signInManager.PasswordSignInAsync(user,
                         loginDTO.Password,
                         isPersistent: false,
-                        lockoutOnFailure: false);
+                        lockoutOnFailure: false);   
                     
                     if (!signIn.Succeeded)
                     {
@@ -37,8 +36,8 @@ namespace backend.Endpoints
 
                     var claims = new List<Claim>
                     {
-                        new(JwtRegisteredClaimNames.Sub, user.Id!),
-                        new(ClaimTypes.Name, user.UserName!)
+                        new(JwtRegisteredClaimNames.Sub, user.Id.ToString()!),
+                        new(ClaimTypes.Name, user.UserName ?? "")
                     };
                     
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));

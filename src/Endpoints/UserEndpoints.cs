@@ -20,7 +20,9 @@ public static class UsersEndpoints
         {
             User user = newUser.ToEntity();
             var result = await userManager.CreateAsync(user, newUser.Password);
-            return result.Succeeded ? Results.Created($"/users/{user.Id}", user.ToDTO()) : Results.BadRequest();
+            return result.Succeeded 
+                ? Results.Created($"/users/{user.Id}", user.ToDTO()) 
+                : Results.BadRequest();
         })
         .WithName("CreateUser")
         .WithTags("Users")
@@ -30,9 +32,9 @@ public static class UsersEndpoints
         .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
         
         // Get /users/{id}
-        group.MapGet("/{userId}", async (string userId, UserManager<User> userManager) =>
+        group.MapGet("/{userId}", async (int userId, UserManager<User> userManager) =>
         {
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId.ToString());
             if (user is null)
             {
                 return Results.NotFound();
@@ -46,9 +48,9 @@ public static class UsersEndpoints
         .Produces<UserDTO>()
         .Produces<NotFound>(StatusCodes.Status404NotFound);
         
-        group.MapPut("/{userId}/change-password", async (string userId, UpdateUserPasswordDTO updatePasswordDTO, UserManager<User> userManager) =>
+        group.MapPut("/{userId}/change-password", async (int userId, UpdateUserPasswordDTO updatePasswordDTO, UserManager<User> userManager) =>
         {
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByIdAsync(userId.ToString());
             
             if(user == null) {
                 return Results.BadRequest("Invalid user id.");
@@ -72,7 +74,7 @@ public static class UsersEndpoints
         group.MapDelete("/{userId}", async ([FromBody] DeleteUserDTO deleteUserDTO, UserManager<User> userManager) =>
         {
             try {
-                var user = await userManager.FindByIdAsync(deleteUserDTO.Id);
+                var user = await userManager.FindByIdAsync(deleteUserDTO.Id.ToString());
 
                 if(user == null) {
                     return Results.BadRequest("Invalid user id.");
