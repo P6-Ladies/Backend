@@ -17,8 +17,12 @@ namespace backend.Extensions
             var user = await userManager.FindByEmailAsync("user@user.com");
             if (user == null)
             {
-                user = new User { Email = "user@user.com" };
-                await userManager.CreateAsync(user, "Password123");
+                user = new User { UserName = "user@user.com", Email = "user@user.com" };
+                var createResult = await userManager.CreateAsync(user, "Password123!");
+                if (!createResult.Succeeded)
+                {
+                    throw new Exception($"User creation failed: {string.Join(", ", createResult.Errors.Select(e => e.Description))}");
+                }
             }
         }
         
