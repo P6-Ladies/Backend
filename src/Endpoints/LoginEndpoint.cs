@@ -37,8 +37,8 @@ namespace backend.Endpoints
 
                     var claims = new List<Claim>
                     {
-                        new(JwtRegisteredClaimNames.Sub, user.Id),
-                        new(ClaimTypes.Name, user.UserName)
+                        new(JwtRegisteredClaimNames.Sub, user.Id!),
+                        new(ClaimTypes.Name, user.UserName!)
                     };
                     
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Value.SecretKey));
