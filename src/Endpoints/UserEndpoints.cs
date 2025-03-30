@@ -56,8 +56,8 @@ public static class UsersEndpoints
 
             var result = await userManager.ChangePasswordAsync(
                 user, 
-                updatePasswordDTO.oldPassword, 
-                updatePasswordDTO.newPassword);
+                updatePasswordDTO.OldPassword, 
+                updatePasswordDTO.NewPassword);
             return result.Succeeded ? Results.Ok() : Results.BadRequest(result.Errors);
         })
         .WithName("ChangeUserPassword")

@@ -11,6 +11,7 @@ public static class UserMapping
         return new User
         {
             Email = userDTO.Email,
+            UserName = userDTO.Email
         };
     }
 

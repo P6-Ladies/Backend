@@ -3,6 +3,7 @@
 using backend.Data;
 using backend.Endpoints;
 using backend.Extensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
 
 
@@ -10,6 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configure Services
 builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.AllowedUserNameCharacters =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+});
 
 var app = builder.Build();
 
@@ -24,12 +31,8 @@ app.UseStaticFiles();
 app.MapLoginEndpoint();
 app.MapUsersEndpoints();
 
-// Apply migrations and seed data only if not in the "Testing" environment
-if (!app.Environment.IsEnvironment("Testing"))
-{
-    await app.ApplyMigrationsAsync();
-    await app.SeedDataAsync();
-}
+await app.ApplyMigrationsAsync();
+await app.SeedDataAsync();
 
 if (app.Environment.IsDevelopment())
 {
