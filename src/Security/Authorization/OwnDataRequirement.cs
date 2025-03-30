@@ -19,7 +19,19 @@ public class OwnDataAuthorizationHandler(
         AuthorizationHandlerContext context,
         OwnDataRequirement requirement)
     {
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            context.Fail();
+            return;
+        }
+
         var userId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+        if (userId == null)
+        {
+            context.Fail();
+            return;
+        }
+
         var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null)
@@ -29,7 +41,19 @@ public class OwnDataAuthorizationHandler(
         }
         
         var httpContext = _httpContextAccessor.HttpContext;
-        var userIdInUrl = httpContext.Request.RouteValues["userId"].ToString();
+        if (httpContext == null)
+        {
+            context.Fail();
+            return;
+        }
+        var routeValue = httpContext.Request.RouteValues["userId"];
+        var userIdInUrl = routeValue?.ToString();
+
+        if (string.IsNullOrEmpty(userIdInUrl))
+        {
+            context.Fail();
+            return;
+        }
         
         var targetUser = await _userManager.FindByIdAsync(userIdInUrl);
         if (targetUser == null)

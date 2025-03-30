@@ -13,6 +13,10 @@ public static class ClaimUtils
 
     public static IdentityUserClaim<string> GetHighestClaim(List<IdentityUserClaim<string>> claims)
     {
-        return claims.OrderBy(uc => RoleHierarchy.TryGetValue(uc.ClaimType, out var value) ? value : 0).First();
+        return claims.OrderBy(uc =>
+        {
+            var claimType = uc.ClaimType ?? string.Empty; 
+            return RoleHierarchy.TryGetValue(claimType, out var val) ? val : 0;
+        }).First();
     }
 }
