@@ -9,6 +9,15 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Cross thing, something we might delete when going to production
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
 // Configure Services
 builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
 
@@ -19,6 +28,8 @@ builder.Services.Configure<IdentityOptions>(options =>
 });
 
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 // Configure middleware
 app.UseSwagger();
