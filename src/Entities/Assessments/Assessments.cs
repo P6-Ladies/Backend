@@ -1,10 +1,10 @@
 // src\Entities\Assesments\Assesments.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using backend.Entities.Conversations;
-using backend.Entities.Users;
+using Backend.Entities.Conversations;
+using Backend.Entities.Users;
 
-namespace backend.Entities.Assessments;
+namespace Backend.Entities.Assessments;
 public class Assessment
 {
     [Key]

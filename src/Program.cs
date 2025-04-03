@@ -1,6 +1,11 @@
 // src\Program.cs
-using backend.Endpoints;
-using backend.Extensions;
+
+using Backend.Data;
+using Backend.Endpoints;
+using Backend.Extensions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
