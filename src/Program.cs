@@ -1,22 +1,17 @@
 // src\Program.cs
-
-using backend.Data;
 using backend.Endpoints;
 using backend.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Services
-builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.User.AllowedUserNameCharacters =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-});
+builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment)
+    .ConfigureIdentity()
+    .ConfigureJwt(builder.Configuration)
+    .ConfigureAuthorizationPolicies()
+    .ConfigureSwagger()
+    .ConfigureEmailServices(builder.Configuration, builder.Environment)
+    .ConfigureUserIdentity();
 
 var app = builder.Build();
 

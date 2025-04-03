@@ -13,7 +13,11 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "YourStrong!Passw0rd"
       POSTGRES_DB: "your_database_name"
-
+      SMTP_HOST: "mailhog"
+      SMTP_PORT: "1025"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_USE_SSL: "false"
     ports:
       - "80:5171"
 
@@ -24,8 +28,20 @@ services:
 
     depends_on:
       - db
+      - mailhog
+    networks:
+      - app-network
     stdin_open: true
     tty: true
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: prototype-p6-mailhog
+    ports:
+      - "1025:1025"  # SMTP server port
+      - "8025:8025"  # Web UI port
+    networks:
+      - app-network
 
   db:
     image: postgres:15
@@ -41,6 +57,8 @@ services:
 
     volumes:
       - p6_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
 volumes:
   p6_db_data:
