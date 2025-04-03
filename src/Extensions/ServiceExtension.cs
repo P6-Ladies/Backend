@@ -119,5 +119,41 @@ namespace backend.Extensions
 
             return services;
         }
+
+        public static IServiceCollection ConfigureCors(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
+                                    .AllowAnyMethod()
+                                    .AllowAnyHeader());
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection ConfigureEmailServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+        {
+        services.AddFluentEmail("noreply@prototype.local")
+            .AddSmtpSender(
+                host: configuration["SMTP_HOST"] ?? "localhost",
+                port: int.Parse(configuration["SMTP_PORT"] ?? "1025"),
+//              ssl: bool.Parse(configuration["SMTP_USE_SSL"] ?? "false"),
+                username: configuration["SMTP_USERNAME"],
+                password: configuration["SMTP_PASSWORD"]);
+                
+        return services;
+        }
+
+        public static IServiceCollection ConfigureUserIdentity(this IServiceCollection services)
+        {
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.User.AllowedUserNameCharacters =
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+            });
+        return services;
+        }
     }
 }
