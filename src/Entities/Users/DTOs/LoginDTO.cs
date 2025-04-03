@@ -1,6 +1,6 @@
 // src\Entities\Users\DTOs\LoginDTO.cs
 
-namespace backend.Entities.Users.DTOs;
+namespace Backend.Entities.Users.DTOs;
 public record LoginDTO
 {
     public required string Email { get; set; }

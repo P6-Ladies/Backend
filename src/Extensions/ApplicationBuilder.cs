@@ -1,10 +1,10 @@
 // src\Extensions\ApplicationBuilder.cs
-using backend.Data;
-using backend.Entities.Users;
+using Backend.Data;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ApplicationBuilder
     {

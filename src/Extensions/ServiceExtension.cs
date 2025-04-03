@@ -1,8 +1,8 @@
 // src\Extensions\ServiceExtension.cs
-using backend.Security.Configuration;
-using backend.Data;
-using backend.Entities.Users;
-using backend.Security.Authorization;
+using Backend.Security.Configuration;
+using Backend.Data;
+using Backend.Entities.Users;
+using Backend.Security.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ServiceExtensions
     {
