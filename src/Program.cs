@@ -1,35 +1,20 @@
 // src\Program.cs
-
-using backend.Data;
 using backend.Endpoints;
 using backend.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Cross thing, something we might delete when going to production
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
-
 // Configure Services
-builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.User.AllowedUserNameCharacters =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-});
+builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment)
+    .ConfigureIdentity()
+    .ConfigureJwt(builder.Configuration)
+    .ConfigureAuthorizationPolicies()
+    .ConfigureSwagger()
+    .ConfigureEmailServices(builder.Configuration, builder.Environment)
+    .ConfigureUserIdentity()
+    .ConfigureCors();
 
 var app = builder.Build();
-
-app.UseCors("AllowFrontend");
 
 // Configure middleware
 app.UseSwagger();
@@ -37,6 +22,7 @@ app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
+app.UseCors("AllowFrontend");
 
 // Map Endpoints
 app.MapLoginEndpoint();
