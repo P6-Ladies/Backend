@@ -40,6 +40,7 @@ app.UseStaticFiles();
 
 // Map Endpoints
 app.MapLoginEndpoint();
+app.MapDeepSeekEndpoints();
 app.MapUsersEndpoints();
 
 await app.ApplyMigrationsAsync();
