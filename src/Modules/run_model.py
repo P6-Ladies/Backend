@@ -1,16 +1,19 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
 import sys
 
-model_dir = sys.argv[1]
-prompt = sys.argv[2] if len(sys.argv) > 2 else "def print_hello_world():"
+model_path = sys.argv[1]
+prompt = sys.argv[2]
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+tokenizer = AutoTokenizer.from_pretrained(model_path)
+model = AutoModelForCausalLM.from_pretrained(model_path)
 
-print(f"Loading model from {model_dir}...")
-tokenizer = AutoTokenizer.from_pretrained(model_dir)
-model = AutoModelForCausalLM.from_pretrained(model_dir).to(device)
+# ✅ Fix: make sure this stays a dictionary
+inputs = tokenizer(prompt, return_tensors="pt")
 
-inputs = tokenizer.encode(prompt, return_tensors="pt").to(device)
-outputs = model.generate(inputs)
-print(tokenizer.decode(outputs[0]))
+# Generate safely
+output = model.generate(**inputs, max_new_tokens=20)
+
+# Decode output
+decoded = tokenizer.decode(output[0], skip_special_tokens=True)
+print(decoded)
