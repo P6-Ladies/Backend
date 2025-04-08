@@ -27,7 +27,7 @@ COPY ./docker/dev/requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # 7.5: Upgrade transformers and hub
-RUN pip3 install --upgrade transformers huggingface_hub
+RUN pip3 install --upgrade transformers huggingface_hub hf_xet
 
 #7.75: 
 ENV HF_HUB_OFFLINE=0

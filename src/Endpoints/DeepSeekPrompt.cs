@@ -18,8 +18,8 @@ public static class DeepSeekEndpoints
 {
 
     private const string modelDirectory = "./Models/smol_lm_1.7b";
-    private const string downloadScriptPath = "./src/Modules/download_model.py";
-    private const string runScriptPath = "./src/Modules/run_model.py";
+    private const string downloadScriptPath = "./Modules/download_model.py";
+    private const string runScriptPath = "./Modules/run_model.py";
 
     public static RouteGroupBuilder MapDeepSeekEndpoints(this WebApplication app)
     {
@@ -28,8 +28,13 @@ public static class DeepSeekEndpoints
         {
             if (!Directory.Exists(modelDirectory))
             {
-                return Results.BadRequest("Model not downloaded. Please call /download-model first.");
+                return Results.BadRequest(new {
+                    message = "Model not downloaded. Please call /download-model first.",
+                    solution = "Please call other endpoint first",
+                    expectedPath = Path.GetFullPath(modelDirectory)
+                });
             }
+
 
             var result = await ExecutePythonScript(
                 scriptPath: runScriptPath,
@@ -50,12 +55,29 @@ public static class DeepSeekEndpoints
             if (Directory.Exists(modelDirectory)) {
                 return Results.Ok(new 
                 {
-                    Message = "Model already downloaded"
+                    Message = "Model already downloaded",
+                    path = Path.GetFullPath(modelDirectory) 
                 });
             }
-            var results = await ExecutePythonScript(scriptPath: downloadScriptPath, arguments: $"\"{modelDirectory}\"");
-            return results;
-        }).WithName("download model")
+            var results = await ExecutePythonScript(
+                scriptPath: downloadScriptPath, 
+                arguments: $"\"{modelDirectory}\""
+            );
+            if(results is OkObjectResult okResult && okResult.Value != null) {
+                return Results.Ok(new {
+                    message = "Model Downloaded Succesfully",
+                    path = Path.GetFullPath(modelDirectory),
+                    details = okResult.Value
+                });
+            }
+                // ✅ Add a fallback response:
+            return Results.Problem(
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: "Failed to download model.",
+                detail: "The Python script did not return a valid result."
+            );
+        })
+        .WithName("download model")
         .WithTags("DeepSeek")
         .Accepts<DeepSeekPromptDTO>("application/json");;
 
@@ -79,21 +101,64 @@ public static class DeepSeekEndpoints
 
         try
         {
-            process.Start();
-            var output = await process.StandardOutput.ReadToEndAsync();
-            var error = await process.StandardError.ReadToEndAsync();
-            process.WaitForExit();
+            // Start process and set up async reading
+            var outputBuilder = new StringBuilder();
+            var errorBuilder = new StringBuilder();
 
-            if (!string.IsNullOrWhiteSpace(error))
+            process.OutputDataReceived += (sender, e) =>
             {
-                return Results.BadRequest($"Python script error: {error}");
+                if (!string.IsNullOrEmpty(e.Data)) outputBuilder.AppendLine(e.Data);
+            };
+
+            process.ErrorDataReceived += (sender,e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data)) errorBuilder.AppendLine(e.Data);
+            };
+
+            process.Start();
+
+            // Begin async Reading
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            var timeout = TimeSpan.FromSeconds(3600);
+            bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);  
+
+            if (!exited)
+            {
+                process.Kill(true);
+                return Results.Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    detail: $"Python script timed out after {timeout.TotalSeconds} seconds"
+                );
             }
 
-            return Results.Ok(new { result = output });
+            var output = outputBuilder.ToString();
+            var error = errorBuilder.ToString();
+
+            // Check Exit Code
+            if (process.ExitCode != 0)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status500InternalServerError, 
+                    detail: $"Python Script Failed with exit code: {process.ExitCode}\n" + 
+                    $"Error output: {error}\n" + 
+                    $"Standard Ouptut: \n{output}"
+                );
+            }
+
+            return Results.Ok(new {
+                results = output,
+                warnings = string.IsNullOrWhiteSpace(error) ? null : error
+            });
         }
         catch (Exception ex)
         {
-            return Results.Problem($"Exception running Python script: {ex.Message}");
+            return Results.Problem(
+                statusCode: StatusCodes.Status500InternalServerError,
+                detail: $"Exception running Python script: {ex.GetType().Name}\n" + 
+                $"Message: {ex.Message} \n" +
+                $"Stack trace: {ex.StackTrace}");
         }
     }
 }
