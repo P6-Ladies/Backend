@@ -1,15 +1,16 @@
-# ./src/services/run_model.py
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
+import sys
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+model_dir = sys.argv[1]
+prompt = sys.argv[2] if len(sys.argv) > 2 else "def print_hello_world():"
 
-model_name = "deepseek-ai/deepseek-vl-7b-chat"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+print(f"Loading model from {model_dir}...")
+tokenizer = AutoTokenizer.from_pretrained(model_dir)
+model = AutoModelForCausalLM.from_pretrained(model_dir).to(device)
 
-input_ids = tokenizer.encode("Hey babes, how *you* doin'?", return_tensors="pt")
-
-output = model.generate(input_ids, max_new_tokens=30)
-
-decoded = tokenizer.decode(output[0], skip_special_tokens=True)
-print("Generated text:", decoded)
+inputs = tokenizer.encode(prompt, return_tensors="pt").to(device)
+outputs = model.generate(inputs)
+print(tokenizer.decode(outputs[0]))

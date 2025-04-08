@@ -26,6 +26,12 @@ COPY ./docker/dev/requirements.txt /usr/src/app/
 # 7: Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
+# 7.5: Upgrade transformers and hub
+RUN pip3 install --upgrade transformers huggingface_hub
+
+#7.75: 
+ENV HF_HUB_OFFLINE=0
+
 # 8: Copy remaining C# source code
 COPY ../../src/ ./
 
