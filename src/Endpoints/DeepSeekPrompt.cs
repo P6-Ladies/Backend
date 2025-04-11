@@ -10,38 +10,75 @@ using System.Security.Claims;
 using System.Text;
 using System.Diagnostics; // For Process and ProcessStartInfo
 using Microsoft.AspNetCore.Mvc; // For [FromBody]
-using System.Diagnostics;
+
 
 namespace backend.Endpoints;
 
 public static class DeepSeekEndpoints 
 {
 
-    private const string modelDirectory = "./Models/smol_lm_1.7b";
-    private const string downloadScriptPath = "./Modules/download_model.py";
-    private const string runScriptPath = "./Modules/run_model.py";
+    private static readonly string ModelsRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "app", "Models"));
+    private const string ModelName = "smol_lM_1.7b";
+    private static string ModelDirectory => Path.Combine(ModelsRoot, ModelName);
+    private const string DownloadScriptName = "download_model.py";
+    private const string RunScriptName = "run_model.py";
+    private static readonly string ScriptsPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "app", "Modules"));
+    //output is whatever we accept as output that a run python file prints.
+    private static StringBuilder output = new StringBuilder();
+    //eventHandled is what we use to mark that the python file process is complete.
+    private static TaskCompletionSource<bool> eventHandled = new TaskCompletionSource<bool>();
+
+
+
 
     public static RouteGroupBuilder MapDeepSeekEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("DeepSeek");
         group.MapPost("/generate", async ([FromBody] DeepSeekPromptDTO request) =>
         {
-            if (!Directory.Exists(modelDirectory))
+            try
             {
-                return Results.BadRequest(new {
-                    message = "Model not downloaded. Please call /download-model first.",
-                    solution = "Please call other endpoint first",
-                    expectedPath = Path.GetFullPath(modelDirectory)
-                });
+
+                // Ensure Python Script Exists
+                var scriptPath = Path.Combine(ScriptsPath, RunScriptName);
+                if (!File.Exists(scriptPath))
+                {
+                    return Results.BadRequest(new {
+                        message = "Python Script Not Found",
+                        detail = $"Script expected at: {scriptPath}",
+                        statusCode = StatusCodes.Status500InternalServerError
+                    });
+
+                }
+                
+
+                if (!Directory.Exists(Path.Combine(ModelDirectory)))
+                {
+                    return Results.BadRequest(new {
+                        message = "Model not downloaded. Please call /download-model first.",
+                        solution = "Please call other endpoint first",
+                        expectedPath = Path.GetFullPath(ModelDirectory)
+                    });
+                }
+
+                // Validate Prompt
+                if(string.IsNullOrEmpty(request.Prompt))
+                {
+                    return Results.BadRequest("Prompt Cannot Be Empty");
+                }
+
+                return await ExecutePythonScript(
+                    scriptPath: scriptPath,
+                    arguments: $"\"{ModelDirectory}\" \"{request.Prompt}\""
+                );
             }
-
-
-            var result = await ExecutePythonScript(
-                scriptPath: runScriptPath,
-                arguments: $"\"{modelDirectory}\" \"{request.Prompt}\""
-            );
-
-            return result;
+            catch (Exception ex)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    detail: $"Generation Failed: {ex.Message}"
+                );
+            }
         })
         .WithName("GenerateText")
         .WithTags("DeepSeek")
@@ -52,30 +89,72 @@ public static class DeepSeekEndpoints
         .Produces(StatusCodes.Status500InternalServerError);
 
         group.MapPost("/DownloadModel", async () => {
-            if (Directory.Exists(modelDirectory)) {
-                return Results.Ok(new 
+            try 
+            {
+                // Ensure Directory Exists
+                Directory.CreateDirectory(ModelsRoot);
+
+                if (Directory.Exists(ModelDirectory) &&
+                    File.Exists(Path.Combine(ModelDirectory, "config.json")) &&
+                    File.Exists(Path.Combine(ModelDirectory, "pytorch_model.bin"))) 
                 {
-                    Message = "Model already downloaded",
-                    path = Path.GetFullPath(modelDirectory) 
-                });
-            }
-            var results = await ExecutePythonScript(
-                scriptPath: downloadScriptPath, 
-                arguments: $"\"{modelDirectory}\""
-            );
-            if(results is OkObjectResult okResult && okResult.Value != null) {
-                return Results.Ok(new {
-                    message = "Model Downloaded Succesfully",
-                    path = Path.GetFullPath(modelDirectory),
-                    details = okResult.Value
-                });
-            }
-                // ✅ Add a fallback response:
-            return Results.Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Failed to download model.",
-                detail: "The Python script did not return a valid result."
-            );
+                    return Results.Ok(new 
+                    {
+                        Message = "Model already downloaded",
+                        path = Path.GetFullPath(ModelDirectory) 
+                    });
+                }
+
+                // Ensure Python Script Exists
+                var scriptPath = Path.Combine(ScriptsPath, DownloadScriptName);
+                Console.WriteLine("Resolved path: " + scriptPath);
+                if(!File.Exists(scriptPath))
+                {
+                    return Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        detail: $"Python script not found at: {scriptPath}"
+                    );
+                }
+
+                // Execute Download
+                var results = await ExecutePythonScript(
+                    scriptPath: scriptPath, 
+                    arguments: $"\"{ModelDirectory}\""
+                );
+                if(results is not OkObjectResult okResults)
+                {
+                    return results;
+                }
+
+                // Verify Download Success
+                if(!File.Exists(Path.Combine(ModelDirectory, "python_model.bin")))
+                {
+                    return Results.Problem(
+                        statusCode: StatusCodes.Status500InternalServerError,
+                        detail: "Download Appeared to Complete but Model Files are missing"
+                    );
+                }
+
+                if(results is OkObjectResult okResult) {
+                    return Results.Ok(new {
+                        status = "Success",
+                        message = "Model Downloaded Succesfully",
+                        path = Path.GetFullPath(ModelDirectory),
+                        sixe = DirSize(new DirectoryInfo(ModelDirectory)),
+                    });
+                }
+                return Results.Problem("Unexpected error: no return path hit.");
+
+            } 
+            catch (Exception ex) 
+            {
+                return Results.Problem
+                (
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Failed to download model.",
+                    detail: ex.Message
+                );
+            }      
         })
         .WithName("download model")
         .WithTags("DeepSeek")
@@ -90,67 +169,57 @@ public static class DeepSeekEndpoints
         var processStartInfo = new ProcessStartInfo
         {
             FileName = "python",
-            Arguments = $"{scriptPath} {arguments}",
+            Arguments = $"\"{scriptPath}\" {arguments}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
-            CreateNoWindow = true
+            CreateNoWindow = true,
+            WorkingDirectory = Directory.GetCurrentDirectory()
         };
+        var output = new StringBuilder();
 
         using var process = new Process { StartInfo = processStartInfo };
+        if(process == null)
+        {
+            return Results.Problem("Failed to Start Python process");
+        }
 
         try
-        {
-            // Start process and set up async reading
-            var outputBuilder = new StringBuilder();
-            var errorBuilder = new StringBuilder();
-
-            process.OutputDataReceived += (sender, e) =>
+        {        
+            process.OutputDataReceived += (sender, args) =>
             {
-                if (!string.IsNullOrEmpty(e.Data)) outputBuilder.AppendLine(e.Data);
+                if (!string.IsNullOrWhiteSpace(args.Data))
+                {
+                    Console.WriteLine($"[PYTHON STDOUT] {args.Data}");
+                    output.AppendLine(args.Data);
+                }
             };
 
-            process.ErrorDataReceived += (sender,e) =>
+            process.ErrorDataReceived += (sender, args) =>
             {
-                if (!string.IsNullOrEmpty(e.Data)) errorBuilder.AppendLine(e.Data);
+                if (!string.IsNullOrWhiteSpace(args.Data))
+                {
+                    Console.Error.WriteLine($"[PYTHON STDERR] {args.Data}");
+                }
             };
 
             process.Start();
 
-            // Begin async Reading
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var timeout = TimeSpan.FromSeconds(3600);
-            bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);  
+            await process.WaitForExitAsync();
 
-            if (!exited)
+            if(process.ExitCode != 0)
             {
-                process.Kill(true);
                 return Results.Problem(
                     statusCode: StatusCodes.Status500InternalServerError,
-                    detail: $"Python script timed out after {timeout.TotalSeconds} seconds"
+                    detail: $"Python Script failed with exit code: {process.ExitCode}\n" +
+                            (string.IsNullOrEmpty(output.ToString()) ? "" : $"Standard output:\n{output.ToString()}")
                 );
             }
 
-            var output = outputBuilder.ToString();
-            var error = errorBuilder.ToString();
-
-            // Check Exit Code
-            if (process.ExitCode != 0)
-            {
-                return Results.Problem(
-                    statusCode: StatusCodes.Status500InternalServerError, 
-                    detail: $"Python Script Failed with exit code: {process.ExitCode}\n" + 
-                    $"Error output: {error}\n" + 
-                    $"Standard Ouptut: \n{output}"
-                );
-            }
-
-            return Results.Ok(new {
-                results = output,
-                warnings = string.IsNullOrWhiteSpace(error) ? null : error
-            });
+            return Results.Ok(new {results=output.ToString()});
         }
         catch (Exception ex)
         {
@@ -160,5 +229,34 @@ public static class DeepSeekEndpoints
                 $"Message: {ex.Message} \n" +
                 $"Stack trace: {ex.StackTrace}");
         }
+
+        
+    }
+
+    private static void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+    {
+        if (!string.IsNullOrEmpty(outLine.Data))
+        {
+            Console.WriteLine($"[PYTHON STDOUT] {outLine.Data}");
+            output.AppendLine(outLine.Data);
+        }
+    }
+
+
+    private static void ProcessExited(object sender, System.EventArgs e) {
+            Console.WriteLine("Process exited whooo!");
+            eventHandled.TrySetResult(true);
+    }
+
+
+    private static long DirSize(DirectoryInfo d)
+    {
+        long size = 0;
+        FileInfo[] files = d.GetFiles();
+        foreach (FileInfo file in files)
+        {
+            size += file.Length;
+        }
+        return size;
     }
 }

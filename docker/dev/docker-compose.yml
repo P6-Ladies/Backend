@@ -21,11 +21,21 @@ services:
 
     volumes:
       - ../../src:/app/src
+      - ./local-models:/usr/src/app/Models
 
     depends_on:
       - db
     stdin_open: true
     tty: true
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
 
   db:
     image: postgres:15
