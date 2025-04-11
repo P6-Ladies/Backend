@@ -3,5 +3,5 @@
 namespace backend.Entities.Messages;
 public record DeepSeekPromptDTO
 {
-    public string Prompt { get; set; }
+    public string? Prompt { get; set; }
 }

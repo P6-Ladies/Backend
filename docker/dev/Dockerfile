@@ -24,7 +24,9 @@ ENV PATH="/usr/src/app/venv/bin:$PATH"
 COPY ./docker/dev/requirements.txt /usr/src/app/
 
 # 7: Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install transformers==4.49.0
+RUN pip3 install torch==2.6.0
+RUN pip3 install huggingface_hub
 
 # 7.5: Upgrade transformers and hub
 RUN pip3 install --upgrade transformers huggingface_hub hf_xet

@@ -1,13 +1,33 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import sys
+import os
 
-model_dir = sys.argv[1] if len(sys.argv) > 1 else "./models/smol_lm_1.7b"
-checkpoint = "HuggingFaceTB/SmolLM-1.7B"
+def main():
+    if len(sys.argv) < 2:
+        print("Error: Output Directory Not Specified", file=sys.stderr)
+        return 1
 
-print(f"Downloading model to {model_dir}...")
-tokenizer = AutoTokenizer.from_pretrained(checkpoint)
-model = AutoModelForCausalLM.from_pretrained(checkpoint)
+    output_dir = sys.argv[1]
+    model_name = "HuggingFaceTB/SmolLM-1.7B"
 
-tokenizer.save_pretrained(model_dir)
-model.save_pretrained(model_dir)
-print("Model downloaded successfully!")
+    try:
+        print(f"Downloading {model_name} to {output_dir}...")
+
+        #make a directory
+        os.makedirs(output_dir, exist_ok=True)
+
+        #Download and save tokenizer and model
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        model = AutoModelForCausalLM.from_pretrained(model_name)
+
+        tokenizer.save_pretrained(output_dir)
+        model.save_pretrained(output_dir)
+
+        print("Downloaded Successfully")
+        return 0
+    except Exception as e:
+        print(f"Error Downloading Model: {str(e)}", file=sys.stderr)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
