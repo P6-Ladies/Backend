@@ -42,6 +42,7 @@ app.UseStaticFiles();
 app.MapLoginEndpoint();
 app.MapDeepSeekEndpoints();
 app.MapUsersEndpoints();
+app.MapConversationEndpoints();
 
 await app.ApplyMigrationsAsync();
 await app.SeedDataAsync();
