@@ -24,6 +24,8 @@ public class Conversation
 
     public int? ScenarioId { get; set; }
 
+    public bool Completed {get; set; } = false;
+
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
