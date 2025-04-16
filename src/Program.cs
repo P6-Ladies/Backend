@@ -43,6 +43,7 @@ app.MapLoginEndpoint();
 app.MapDeepSeekEndpoints();
 app.MapUsersEndpoints();
 app.MapConversationEndpoints();
+app.MapMessageEndpoints();
 
 await app.ApplyMigrationsAsync();
 await app.SeedDataAsync();
