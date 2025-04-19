@@ -1,9 +1,11 @@
 services:
+  # =======================
+  #  .NET Backend
+  # =======================
   backend:
     build:
       context: ../../
       dockerfile: ./docker/dev/Dockerfile
-
     container_name: Prototype-P6.dev
 
     environment:
@@ -21,22 +23,46 @@ services:
 
     volumes:
       - ../../src:/app/src
-      - ./local-models:/usr/src/app/Models
 
     depends_on:
       - db
+      - huggingface
     stdin_open: true
     tty: true
 
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+  # ============================
+  #  Hugging Face Microservice
+  # ============================
+  huggingface:
+    build:
+      context: ../../
+      dockerfile: ./docker/dev/python/Dockerfile
+    container_name: huggingface-service
+
+    environment:
+      MODEL_NAME: "HuggingFaceTB/SmolLM-1.7B"
+      HF_HUB_OFFLINE: "1"
+
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./local-models:/usr/src/app/Models
+
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: 1
+#              capabilities: [gpu]
+    
+    depends_on:
+      - db
 
 
+  # =======================
+  #  Postgres DB
+  # =======================
   db:
     image: postgres:15
     container_name: prototype-p6-db

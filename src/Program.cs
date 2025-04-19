@@ -27,6 +27,12 @@ builder.Services.Configure<IdentityOptions>(options =>
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 });
 
+builder.Services.AddHttpClient("HF", client =>
+{
+    client.BaseAddress = new Uri("http://huggingface:5000");
+    client.Timeout = Timeout.InfiniteTimeSpan;
+});
+
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
