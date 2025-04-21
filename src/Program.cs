@@ -1,20 +1,31 @@
 // src\Program.cs
 
-using backend.Endpoints;
 using backend.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure services using the extension methods
-ConfigureServices(builder);
+builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins("http://localhost:3000") // Adjust to match frontend URL
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
 
 var app = builder.Build();
 
+// Configure middleware using extension methods
+app.UseCors("AllowFrontend"); // Apply the CORS middleware here
+
 // Configure middleware
-ConfigureMiddleware(app);
+app.ConfigureMiddleware();
 
 // Map the endpoints
-MapEndpoints(app);
+app.MapEndpoints();
 
 await app.ApplyMigrationsAsync();
 await app.SeedDataAsync();
@@ -26,32 +37,4 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.Run(); // Use default settings in production
-}
-
-// Helper Methods
-
-void ConfigureServices(WebApplicationBuilder builder)
-{
-    // Calls the extension method to configure services like database, identity, JWT, etc.
-    builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
-}
-
-void ConfigureMiddleware(WebApplication app)
-{
-    // Adds middleware like CORS, Authentication, Authorization, Swagger, etc.
-    app.UseCors("AllowFrontend");
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.UseAuthentication();
-    app.UseAuthorization();
-    app.UseStaticFiles();
-}
-
-void MapEndpoints(WebApplication app)
-{
-    // Maps the API endpoints to the app
-    app.MapLoginEndpoint();
-    app.MapDeepSeekEndpoints();
-    app.MapUsersEndpoints();
-    app.MapConversationEndpoints();
 }
