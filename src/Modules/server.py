@@ -42,7 +42,7 @@ def generate_text(request: GenerateRequest):
     if not request.prompt:
         return {"error": "Prompt cannot be empty."}
 
-    logging.info(f"⇢ prompt ‑‑{request.prompt[:60]}... (len={len(request.prompt)})")
+    logging.info(f"⇢ prompt --{request.prompt[:60]}... (len={len(request.prompt)})")
     t0 = time.time()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"

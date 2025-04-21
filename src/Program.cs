@@ -1,63 +1,57 @@
 // src\Program.cs
 
-using backend.Data;
 using backend.Endpoints;
 using backend.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Cross thing, something we might delete when going to production
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
-
-// Configure Services
-builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.User.AllowedUserNameCharacters =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-});
-
-builder.Services.AddHttpClient("HF", client =>
-{
-    client.BaseAddress = new Uri("http://huggingface:5000");
-    client.Timeout = Timeout.InfiniteTimeSpan;
-});
+// Configure services using the extension methods
+ConfigureServices(builder);
 
 var app = builder.Build();
 
-app.UseCors("AllowFrontend");
-
 // Configure middleware
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseStaticFiles();
+ConfigureMiddleware(app);
 
-// Map Endpoints
-app.MapLoginEndpoint();
-app.MapDeepSeekEndpoints();
-app.MapUsersEndpoints();
-app.MapConversationEndpoints();
+// Map the endpoints
+MapEndpoints(app);
 
 await app.ApplyMigrationsAsync();
 await app.SeedDataAsync();
 
 if (app.Environment.IsDevelopment())
 {
-    app.Run("http://0.0.0.0:5171");
+    app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
 }
 else
 {
-    app.Run();
+    app.Run(); // Use default settings in production
+}
+
+// Helper Methods
+
+void ConfigureServices(WebApplicationBuilder builder)
+{
+    // Calls the extension method to configure services like database, identity, JWT, etc.
+    builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
+}
+
+void ConfigureMiddleware(WebApplication app)
+{
+    // Adds middleware like CORS, Authentication, Authorization, Swagger, etc.
+    app.UseCors("AllowFrontend");
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    app.UseAuthentication();
+    app.UseAuthorization();
+    app.UseStaticFiles();
+}
+
+void MapEndpoints(WebApplication app)
+{
+    // Maps the API endpoints to the app
+    app.MapLoginEndpoint();
+    app.MapDeepSeekEndpoints();
+    app.MapUsersEndpoints();
+    app.MapConversationEndpoints();
 }
