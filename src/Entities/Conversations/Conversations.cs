@@ -31,6 +31,7 @@ public class Conversation
 
     public int? MessageCount { get; set; }
     public int? TokenCount { get; set; }
+    public bool Completed { get; set; }
 
     // Navigation properties
     [ForeignKey(nameof(UserId))]

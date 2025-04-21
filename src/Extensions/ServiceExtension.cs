@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using backend.Endpoints;
 
 namespace backend.Extensions
 {
@@ -136,7 +137,6 @@ namespace backend.Extensions
             return services;
         }
     
-
         /// <summary>
         /// Configures all necessary services including database, identity, JWT, authorization, and Swagger.
         /// </summary>
@@ -162,6 +162,33 @@ namespace backend.Extensions
             });
 
             return services;
+        }
+
+        /// <summary>
+        /// Configures middleware for the application.
+        /// </summary>
+        public static void ConfigureMiddleware(this WebApplication app)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseStaticFiles();
+        }
+
+        /// <summary>
+        /// Maps the application's API endpoints.
+        /// </summary>
+        public static void MapEndpoints(this WebApplication app)
+        {
+            app.MapLoginEndpoint();
+            app.MapDeepSeekEndpoints();
+            app.MapUsersEndpoints();
+            app.MapConversationEndpoints();
+            app.MapMessageEndpoints();
+            app.MapAgentEndpoints();
+            app.MapAssessmentEndpoints();
+            app.MapScenarioEndpoints();
         }
     }
 }
