@@ -1,10 +1,8 @@
-
 namespace backend.Entities.Assessments.DOTs;
-// DTO for updating an assessment
-public class UpdateAssessmentDTO
+public class AssessmentResultDTO
 {
-    public required string Body { get; set; }
-    public required string ConflictManagementStrategy { get; set; }
+    public string Body { get; set; }
+    public string ConflictManagementStrategy { get; set; }
     public int Openness { get; set; }
     public int Conscientiousness { get; set; }
     public int Extroversion { get; set; }
