@@ -125,7 +125,7 @@ namespace backend.Data
 
                 // Relationship: Message -> Conversation
                 entity.HasOne(m => m.Conversation)
-                    .WithMany(c => c.Messages)
+                    .WithMany()
                     .HasForeignKey(m => m.ConversationId)
                     .OnDelete(DeleteBehavior.Cascade);
 

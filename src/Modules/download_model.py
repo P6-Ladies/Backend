@@ -4,8 +4,8 @@ import sys
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/smol_lM_1.7b"
-MODEL_NAME = "HuggingFaceTB/SmolLM-1.7B"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-1B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
 def main():
     """
@@ -14,7 +14,7 @@ def main():
     """
 
     # Quick check: if certain critical files exist, assume it's downloaded
-    essential_files = ["model-00001-of-00002.safetensors", "config.json"]
+    essential_files = ["model.safetensors", "config.json"]
     is_model_present = all(
         os.path.exists(os.path.join(MODEL_DIR, fname)) 
         for fname in essential_files
@@ -31,7 +31,7 @@ def main():
     try:
         # Download & save model + tokenizer
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16)
 
         tokenizer.save_pretrained(MODEL_DIR)
         model.save_pretrained(MODEL_DIR)

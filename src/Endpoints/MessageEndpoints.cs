@@ -29,21 +29,40 @@ namespace backend.Endpoints
 
                 try
                 {
-                    // Retrieve the conversation and agent from the database
+                    // 1) load conversation + agent + scenario
                     var conversation = await dbContext.Conversations
                         .Include(c => c.Agent)
+                        .Include(c => c.Scenario)
                         .FirstOrDefaultAsync(c => c.Id == conversationId);
-                    
-                    if (conversation == null)
-                    {
-                        return Results.NotFound("Conversation not found.");
-                    }
 
-                    // Construct the JSON body for the Python microservice
+                    if (conversation == null)
+                        return Results.NotFound("Conversation not found.");
+                    
+
+                    var agent = conversation.Agent;
+                    var scenario = conversation.Scenario;
+                   
                     var requestBody = new
                     {
-                        prompt = request.Message,
-                        max_length = 256 // Set maximum length for the LLM response
+                        Agent = new
+                        {
+                            Name               = agent.Name,
+                            PromptBody         = agent.PromptBody,
+                            Openness           = agent.Openness,
+                            Conscientiousness  = agent.Conscientiousness,
+                            Extroversion       = agent.Extroversion,
+                            Agreeableness      = agent.Agreeableness,
+                            Neuroticism        = agent.Neuroticism
+                        },
+                        Scenario = new
+                        {
+                            Name               = scenario.Name,
+                            SettingPrompt      = scenario.SettingPrompt,
+                            ConflictPrompt     = scenario.ConflictPrompt,
+                            AdditionalPrompt   = scenario.AdditionalPrompt ?? ""
+                        },
+                        Prompt     = request.Message,
+                        MaxLength = 256
                     };
 
                     var jsonBody = JsonSerializer.Serialize(requestBody);
@@ -62,7 +81,10 @@ namespace backend.Endpoints
 
                     // Parse the generated text from the response
                     var responseJson = await response.Content.ReadAsStringAsync();
-                    var generatedText = JsonDocument.Parse(responseJson).RootElement.GetProperty("result").GetString();
+                    var generatedText = JsonDocument.Parse(responseJson)
+                                                    .RootElement
+                                                    .GetProperty("result")
+                                                    .GetString();
 
                     if (string.IsNullOrEmpty(generatedText))
                     {
@@ -106,17 +128,10 @@ namespace backend.Endpoints
             // Get all messages in a conversation (with text, date, and sender)
             app.MapGet("/conversations/{conversationId}/messages", async (int conversationId, PrototypeDbContext dbContext) =>
             {
-                var conversation = await dbContext.Conversations
-                    .Include(c => c.Messages)
-                    .FirstOrDefaultAsync(c => c.Id == conversationId);
-
-                if (conversation == null)
-                {
-                    return Results.NotFound("Conversation not found.");
-                }
 
                 // Retrieve all messages and include who sent them (user/agent) and timestamp
-                var messages = conversation.Messages
+                var messages = dbContext.Messages
+                    .Where(m => m.ConversationId == conversationId)
                     .Select(m => new
                     {
                         m.Body,
@@ -125,6 +140,11 @@ namespace backend.Endpoints
                     })
                     .OrderBy(m => m.ReceivedAt)
                     .ToList();
+
+                if (messages == null)
+                    {
+                        return Results.NotFound("No messages found.");
+                    }
 
                 return Results.Ok(messages);
             })

@@ -95,7 +95,6 @@ public static class ConversationEndpoints
             var conversation = await dbContext.Conversations
                 .Include(c => c.Agent)
                 .Include(c => c.Scenario)
-                .Include(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.Id == conversationId);
 
             if (conversation == null)
