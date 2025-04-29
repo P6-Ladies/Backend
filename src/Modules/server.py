@@ -2,7 +2,7 @@ from fastapi import FastAPI # type: ignore
 from pydantic import BaseModel # type: ignore
 from typing import Optional, List, Dict
 from transformers import pipeline, AutoTokenizer, AutoModelForCausalLM
-import logging, time, torch # type: ignore
+import logging, time, torch, re # type: ignore
 
 
 # ────────────────────────── logging ──────────────────────────
@@ -17,7 +17,7 @@ logging.basicConfig(
 app = FastAPI()
 
 # Language model(s)
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/smol_lM_1.7b"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-1B-Instruct"
 # Assessment models
 SUMMARIZER_MODEL = "facebook/bart-large-cnn"
 PERSONALITY_MODEL = "Nasserelsaman/microsoft-finetuned-personality"
@@ -43,7 +43,7 @@ class GenerateRequest(BaseModel):
     Agent: AgentPayload
     Scenario: ScenarioPayload
     Prompt: str
-    MaxLength: Optional[int] = 128
+    MaxLength: Optional[int] = 2048
 
 class AssessRequest(BaseModel):
     Conversation: str
@@ -147,20 +147,12 @@ def generate_text(request: GenerateRequest):
     ]
 
     # ---- create input tensors with graceful fallback ------------------
-    if getattr(tokenizer, "chat_template", None):
         # template really exists → safe to call
-        prompt_text = tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-        )
-    else:
-        # Fallback: simple manual prompt
-        prompt_text = (
-            system_content + "\n\n"
-            + agent_content + "\n\nUser: " + request.Prompt
-            + "\n\nAgent:"
-        )
+    prompt_text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
 
     inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
     input_ids      = inputs["input_ids"]
@@ -181,30 +173,30 @@ def generate_text(request: GenerateRequest):
     logging.info(f"Tokenized in {time.time()-t0:0.2f}s → shape {tuple(input_ids.shape)}")
 
     # ---- extract Agent reply -------------------------------------
-    raw_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    Agent_reply = tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
-    if getattr(tokenizer, "chat_template", None):
+    Agent_reply = re.split(r"Agent:.+]\s*", Agent_reply,)[-1]
+
+    # if getattr(tokenizer, "chat_template", None):
         # template path
-        Agent_reply = tokenizer.chat_template.get_response(raw_text).strip()
-    else:
+        # Agent_reply = tokenizer.chat_template.get_response(raw_text).strip()
+        # print(tokenizer.decode(Agent_reply[0]))
+    # else:
         # fallback – look for the last "Agent:" marker, otherwise use full text
-        if "Agent:" in raw_text:
-            Agent_reply = raw_text.split("Agent:", 1)[-1].strip()
-        else:
-            Agent_reply = raw_text.strip()
+        # if "Agent:" in raw_text:
+        #    Agent_reply = raw_text.split("Agent:", 1)[-1].strip()
+        # else:
+        #    Agent_reply = raw_text.strip()
 
-    if not Agent_reply:
-        logging.error("assistant_reply is empty -- raw_text length=%d", len(raw_text))
-    else:
-        logging.info(
-            "assistant_reply len=%d – first 120 chars: %s",
-            len(Agent_reply),
-            Agent_reply[:120].replace("\n", "\\n")
-        )
+    logging.info(
+        "assistant_reply len=%d – first 120 chars: %s",
+        len(Agent_reply),
+        Agent_reply[:120].replace("\n", "\\n")
+    )
     logging.info(f"⇠ result len={len(Agent_reply)} chars | total {time.time()-t0:0.2f}s")
     return {
         "result": Agent_reply,
-        "raw_len": len(raw_text),          # help .NET side verify
+        # "raw_len": len(raw_text),          # help .NET side verify
         "reply_len": len(Agent_reply)
     }
 

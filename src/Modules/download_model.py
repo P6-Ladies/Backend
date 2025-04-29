@@ -1,6 +1,7 @@
 # src\Modules\download_model.py
 import os
 import sys
+import torch
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -30,8 +31,8 @@ def main():
 
     try:
         # Download & save model + tokenizer
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16)
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_auth_token="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")
+        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, use_auth_token="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")
 
         tokenizer.save_pretrained(MODEL_DIR)
         model.save_pretrained(MODEL_DIR)

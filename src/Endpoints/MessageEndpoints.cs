@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using backend.Extensions;
 
 
 namespace backend.Endpoints
@@ -38,9 +39,41 @@ namespace backend.Endpoints
                     if (conversation == null)
                         return Results.NotFound("Conversation not found.");
                     
+                    var messages = dbContext.Messages
+                        .Where(m => m.ConversationId == conversationId)
+                        .Select(m => new
+                        {
+                            m.Body,
+                            m.ReceivedAt,
+                            m.UserSent
+                        })
+                        .OrderBy(m => m.ReceivedAt)
+                        .ToList();
+
+                    if (messages == null)
+                        {
+                            return Results.NotFound("No messages found.");
+                        }
+                    
 
                     var agent = conversation.Agent;
                     var scenario = conversation.Scenario;
+
+                    var pastConversation = new StringBuilder();
+                    foreach (var msg in messages)
+                    {
+                        pastConversation.AppendLine(msg.UserSent ? $"User: {msg.Body}" : $"Agent: {msg.Body}");
+                    }
+
+                    // Build structured full prompt
+                    var fullPrompt = new StringBuilder();
+                    fullPrompt.AppendLine("[BEGIN CONVERSATION HISTORY]");
+                    fullPrompt.AppendLine(pastConversation.ToString().Trim());
+                    fullPrompt.AppendLine("[END CONVERSATION HISTORY]");
+                    fullPrompt.AppendLine();
+                    fullPrompt.AppendLine("[NEW INPUT]");
+                    fullPrompt.AppendLine($"User: {request.Message}");
+                    fullPrompt.AppendLine("Agent:");
                    
                     var requestBody = new
                     {
@@ -61,8 +94,8 @@ namespace backend.Endpoints
                             ConflictPrompt     = scenario.ConflictPrompt,
                             AdditionalPrompt   = scenario.AdditionalPrompt ?? ""
                         },
-                        Prompt     = request.Message,
-                        MaxLength = 256
+                        Prompt     = fullPrompt.ToString(),
+                        MaxLength = 2048
                     };
 
                     var jsonBody = JsonSerializer.Serialize(requestBody);
