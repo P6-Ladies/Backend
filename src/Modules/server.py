@@ -17,7 +17,7 @@ logging.basicConfig(
 app = FastAPI()
 
 # Language model(s)
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-1B-Instruct"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-3B-Instruct"
 # Assessment models
 SUMMARIZER_MODEL = "facebook/bart-large-cnn"
 PERSONALITY_MODEL = "Nasserelsaman/microsoft-finetuned-personality"
@@ -63,9 +63,9 @@ def load_language_model():
     global tokenizer, model, device
     logging.info(f"Loading language model from {MODEL_DIR}")
     t0 = time.time()
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR, trust_remote_code=True,torch_dtype=torch.bfloat16)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = AutoModelForCausalLM.from_pretrained(MODEL_DIR, trust_remote_code=True).to(device)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_DIR, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
     logging.info(f"Model loaded on {device} in {time.time()-t0:0.1f}s")
 
 @app.on_event("startup")
@@ -173,9 +173,15 @@ def generate_text(request: GenerateRequest):
     logging.info(f"Tokenized in {time.time()-t0:0.2f}s → shape {tuple(input_ids.shape)}")
 
     # ---- extract Agent reply -------------------------------------
-    Agent_reply = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    # number of tokens in input prompt
+    input_length = input_ids.shape[-1]
 
-    Agent_reply = re.split(r"Agent:.+]\s*", Agent_reply,)[-1]
+    # get generated tokens past the prompt
+    generated_tokens = output_ids[0][input_length:]
+
+    # decode them
+    Agent_reply = tokenizer.decode(generated_tokens, skip_special_tokens=True)
+
 
     # if getattr(tokenizer, "chat_template", None):
         # template path

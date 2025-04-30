@@ -5,8 +5,8 @@ import torch
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-1B-Instruct"
-MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-3B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.2-3B-Instruct"
 
 def main():
     """

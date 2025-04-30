@@ -1,0 +1,5 @@
+# pack-refs with: peeled fully-peeled sorted 
+b4a144329fbfbdefe5e0b13f067fc8f66cf2dab0 refs/heads/Base-Python-Server
+abe69f8718a6c625b159493e1b9a268893aa15c0 refs/heads/before-kamilla
+8558c4f40a06cbd42302d58fc10d56e863bac2ba refs/heads/email
+76a2c8248a85075bef171171b0c02d06c831b5f8 refs/heads/main
