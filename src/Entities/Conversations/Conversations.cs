@@ -14,6 +14,9 @@ public class Conversation
     public int Id { get; set; }
 
     [Required]
+    public required string Title { get; set; }
+
+    [Required]
     public int UserId { get; set; }
 
     [Required]
@@ -28,6 +31,7 @@ public class Conversation
 
     public int? MessageCount { get; set; }
     public int? TokenCount { get; set; }
+    public bool Completed { get; set; }
 
     // Navigation properties
     [ForeignKey(nameof(UserId))]
@@ -41,4 +45,5 @@ public class Conversation
 
     public ICollection<Message> Messages { get; set; } = new List<Message>();
     public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
+
 }
