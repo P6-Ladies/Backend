@@ -5,8 +5,8 @@ import torch
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-3B-Instruct"
-MODEL_NAME = "meta-llama/Llama-3.2-3B-Instruct"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Meta-Llama-3.1-8B-Instruct"
+MODEL_NAME = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 def main():
     """
@@ -15,7 +15,8 @@ def main():
     """
 
     # Quick check: if certain critical files exist, assume it's downloaded
-    essential_files = ["model.safetensors", "config.json"]
+    essential_files = ["config.json"]
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     is_model_present = all(
         os.path.exists(os.path.join(MODEL_DIR, fname)) 
         for fname in essential_files
@@ -32,7 +33,7 @@ def main():
     try:
         # Download & save model + tokenizer
         tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_auth_token="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")
-        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, use_auth_token="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")
+        model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, torch_dtype=torch.bfloat16, use_auth_token="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").to(device)
 
         tokenizer.save_pretrained(MODEL_DIR)
         model.save_pretrained(MODEL_DIR)

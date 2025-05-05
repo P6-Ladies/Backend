@@ -48,13 +48,13 @@ services:
     volumes:
       - ./local-models:/usr/src/app/Models
 
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     
     depends_on:
       - db

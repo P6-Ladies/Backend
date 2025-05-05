@@ -95,7 +95,7 @@ namespace backend.Endpoints
                             AdditionalPrompt   = scenario.AdditionalPrompt ?? ""
                         },
                         Prompt     = fullPrompt.ToString(),
-                        MaxLength = 2048
+                        MaxLength = 8192
                     };
 
                     var jsonBody = JsonSerializer.Serialize(requestBody);

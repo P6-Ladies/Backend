@@ -17,7 +17,7 @@ logging.basicConfig(
 app = FastAPI()
 
 # Language model(s)
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-3B-Instruct"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Meta-Llama-3.1-8B-Instruct"
 # Assessment models
 SUMMARIZER_MODEL = "facebook/bart-large-cnn"
 PERSONALITY_MODEL = "Nasserelsaman/microsoft-finetuned-personality"
@@ -43,7 +43,7 @@ class GenerateRequest(BaseModel):
     Agent: AgentPayload
     Scenario: ScenarioPayload
     Prompt: str
-    MaxLength: Optional[int] = 2048
+    MaxLength: Optional[int] = 8192
 
 class AssessRequest(BaseModel):
     Conversation: str
@@ -217,7 +217,7 @@ def assess(request: AssessRequest):
     sum_t0 = time.time()
     summary = summarizer(conversation, max_length=150, min_length=40)[0]["summary_text"]
     logging.info(f"Summarized in {(time.time()-sum_t0):0.2f}s")
-
+ 
     # 2) Big-Five scores
     per_t0 = time.time()
     raw_scores: List[Dict] = personality_clf(conversation)
