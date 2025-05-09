@@ -5,6 +5,7 @@ using backend.Entities.Conversations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.Entities.Conversations.DTOs;
+using backend.Entities.Messages;
 
 namespace backend.Endpoints;
 
@@ -47,8 +48,17 @@ public static class ConversationEndpoints
                 CreatedAt = DateTime.UtcNow,
                 Completed = false
             };
-
+            
             dbContext.Conversations.Add(conversation);
+
+            await dbContext.SaveChangesAsync();
+
+            // Add initial messages from scenario.
+            var initialUserMessage = new Message{Body = scenario.InitialUserMessage, UserSent = true, ConversationId = conversation.Id};
+            var initialAgentMessage = new Message{Body = scenario.InitialAgentMessage, UserSent = false, ConversationId = conversation.Id};
+
+            dbContext.Messages.Add(initialUserMessage);
+            dbContext.Messages.Add(initialAgentMessage);
             await dbContext.SaveChangesAsync();
 
             return Results.Created($"/conversations/{conversation.Id}", conversation);

@@ -28,6 +28,14 @@ namespace backend.Endpoints
                     return Results.BadRequest("Message cannot be empty.");
                 }
 
+                var userMessage = new Message
+                    {
+                        ConversationId = conversationId,
+                        Body = request.Message,
+                        UserSent = true,
+                        ReceivedAt = DateTime.UtcNow
+                    };
+
                 try
                 {
                     // 1) load conversation + agent + scenario
@@ -58,23 +66,17 @@ namespace backend.Endpoints
 
                     var agent = conversation.Agent;
                     var scenario = conversation.Scenario;
-
-                    var pastConversation = new StringBuilder();
+                    
+                    //Make array of messages for the chat history instead of string, so it can be put into the chat template correctly.
+                    List<Object> historyPrompt = [];
                     foreach (var msg in messages)
-                    {
-                        pastConversation.AppendLine(msg.UserSent ? $"User: {msg.Body}" : $"Agent: {msg.Body}");
-                    }
-
-                    // Build structured full prompt
-                    var fullPrompt = new StringBuilder();
-                    fullPrompt.AppendLine("[BEGIN CONVERSATION HISTORY]");
-                    fullPrompt.AppendLine(pastConversation.ToString().Trim());
-                    fullPrompt.AppendLine("[END CONVERSATION HISTORY]");
-                    fullPrompt.AppendLine();
-                    fullPrompt.AppendLine("[NEW INPUT]");
-                    fullPrompt.AppendLine($"User: {request.Message}");
-                    fullPrompt.AppendLine("Agent:");
-                   
+                        {
+                            historyPrompt.Add(new
+                            {
+                                Sender = msg.UserSent ? "user" : "assistant",
+                                Message = msg.Body
+                            });
+                        }
                     var requestBody = new
                     {
                         Agent = new
@@ -94,7 +96,8 @@ namespace backend.Endpoints
                             ConflictPrompt     = scenario.ConflictPrompt,
                             AdditionalPrompt   = scenario.AdditionalPrompt ?? ""
                         },
-                        Prompt     = fullPrompt.ToString(),
+                        History = historyPrompt,
+                        Prompt     = request.Message,
                         MaxLength = 8192
                     };
 
@@ -125,13 +128,6 @@ namespace backend.Endpoints
                     }
 
                     // Store the user message and agent response in the database
-                    var userMessage = new Message
-                    {
-                        ConversationId = conversationId,
-                        Body = request.Message,
-                        UserSent = true,
-                        ReceivedAt = DateTime.UtcNow
-                    };
                     var agentResponse = new Message
                     {
                         ConversationId = conversationId,

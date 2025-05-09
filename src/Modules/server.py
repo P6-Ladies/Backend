@@ -17,7 +17,7 @@ logging.basicConfig(
 app = FastAPI()
 
 # Language model(s)
-MODEL_DIR = "/usr/src/app/docker/dev/local-models/Meta-Llama-3.1-8B-Instruct"
+MODEL_DIR = "/usr/src/app/docker/dev/local-models/Llama3.2-3B-Instruct"
 # Assessment models
 SUMMARIZER_MODEL = "facebook/bart-large-cnn"
 PERSONALITY_MODEL = "Nasserelsaman/microsoft-finetuned-personality"
@@ -39,10 +39,15 @@ class ScenarioPayload(BaseModel):
     ConflictPrompt: str
     AdditionalPrompt: Optional[str] = ""
 
+class TemplateMessage(BaseModel):
+    Sender: str
+    Message: str
+
 class GenerateRequest(BaseModel):
     Agent: AgentPayload
     Scenario: ScenarioPayload
     Prompt: str
+    History: List[TemplateMessage]
     MaxLength: Optional[int] = 8192
 
 class AssessRequest(BaseModel):
@@ -118,33 +123,42 @@ def generate_text(request: GenerateRequest):
     """Generate agent reply to the user prompt."""
     if not request.Prompt:
         return {"error": "Prompt cannot be empty."}
-
-    logging.info(f"⇢ prompt --{request.Prompt[:60]}... (len={len(request.Prompt)})")
-    
+        
     # ---- build system + agent prompts --------------------------------
     scenario = request.Scenario
     system_content = (
         f"[Scenario: {scenario.Name}]\n"
         f"{scenario.SettingPrompt}\n"
         f"{scenario.ConflictPrompt}\n"
-        f"{scenario.AdditionalPrompt or ''}".strip()
+        f"{scenario.AdditionalPrompt or ''}".strip() 
     )
 
     # Build agent description
     agent = request.Agent
     agent_content = (
-        f"[Agent: {agent.Name}]\n"
+        f"[Assistant: {agent.Name}]\n"
         f"{agent.PromptBody}\n"
-        f"Personality: Openness={agent.Openness}, Conscientiousness={agent.Conscientiousness}, "
-        f"Extroversion={agent.Extroversion}, Agreeableness={agent.Agreeableness}, Neuroticism={agent.Neuroticism}"
+        #f"Personality: Openness={agent.Openness}, Conscientiousness={agent.Conscientiousness}, "
+        #f"Extroversion={agent.Extroversion}, Agreeableness={agent.Agreeableness}, Neuroticism={agent.Neuroticism}"
     )
 
     # Assemble chat messages
     messages = [
         {"role": "system", "content": system_content},
         {"role": "system", "content": agent_content},
-        {"role": "user",   "content": request.Prompt},
     ]
+
+    # Append previous messages into prompt with correct sender
+    for message in request.History:
+        logging.info(message.Sender)
+        logging.info(message.Message)
+        messages.append({"role" : message.Sender, "content" : message.Message})
+    
+    # The newest prompt
+    messages.append({"role": "user",   "content": request.Prompt})
+
+    # Empty message that the agent continues
+    messages.append({"role": "assistant", "content": ""})
 
     # ---- create input tensors with graceful fallback ------------------
         # template really exists → safe to call
@@ -153,6 +167,8 @@ def generate_text(request: GenerateRequest):
         tokenize=False,
         add_generation_prompt=True,
     )
+
+    logging.info(f"⇢ prompt --{prompt_text}... (len={len(request.Prompt)})")
 
     inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
     input_ids      = inputs["input_ids"]

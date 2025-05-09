@@ -1,6 +1,7 @@
 // src\Entities\Scenarios\Scenarios.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Entities.Messages;
 using backend.Entities.Users;
 
 namespace backend.Entities.Scenarios;
@@ -16,6 +17,8 @@ public class Scenario
     public string? SettingPrompt { get; set; }
     public string? ConflictPrompt { get; set; }
     public string? AdditionalPrompt { get; set; }
+    public string InitialUserMessage { get; set; }
+    public string InitialAgentMessage { get; set; }
     public DateTime CreatedAt { get; internal set; }
 
     // Navigation property

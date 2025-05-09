@@ -53,7 +53,7 @@ namespace backend.Endpoints
 
                     var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
                     
-                    return Results.Ok(new { Token = tokenString });
+                    return Results.Ok(new { Token = tokenString, UserId = user.Id });
                 })
                 .WithName("UserLogin")
                 .WithTags("Authentication")
