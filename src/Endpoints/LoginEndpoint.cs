@@ -61,7 +61,6 @@ namespace backend.Endpoints
                 .Accepts<LoginDTO>("application/json")
                 .Produces(StatusCodes.Status200OK)
                 .Produces(StatusCodes.Status400BadRequest);
-        }
-        
+        } 
     }
 }
