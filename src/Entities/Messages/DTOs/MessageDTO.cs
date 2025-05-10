@@ -2,12 +2,16 @@
 using System.ComponentModel.DataAnnotations;
 
 namespace backend.Entities.Messages.DTOs;
-public record SendMessageDTO
+public record MessageDTO
 {
     [Required]
     [StringLength(2400)]
     public required string Body { get; set; }
 
     [Required]
-    public required int ConversationId { get; set; }
+    public required bool UserSent { get; set; }
+
+    [Required]
+    public required DateTime ReceivedAt { get; set; }
+
 }
