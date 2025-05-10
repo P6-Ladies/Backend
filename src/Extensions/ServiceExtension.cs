@@ -173,7 +173,6 @@ namespace Backend.Extensions
             app.UseSwaggerUI();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseStaticFiles();
         }
 
         /// <summary>
@@ -182,7 +181,6 @@ namespace Backend.Extensions
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapLoginEndpoint();
-            app.MapDeepSeekEndpoints();
             app.MapUsersEndpoints();
             app.MapConversationEndpoints();
             app.MapMessageEndpoints();

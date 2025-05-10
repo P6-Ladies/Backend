@@ -2,39 +2,46 @@
 
 using backend.Extensions;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Configure services using the extension methods
-builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
-
-// Configure CORS
-builder.Services.AddCors(options =>
+public partial class Program
 {
-    options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins("http://localhost:3000") // Adjust to match frontend URL
-              .AllowAnyMethod()
-              .AllowAnyHeader());
-});
+    public static void Main(string[] args)
+        {
 
-var app = builder.Build();
+        var builder = WebApplication.CreateBuilder(args);
 
-// Configure middleware using extension methods
-app.UseCors("AllowFrontend"); // Apply the CORS middleware here
+        // Configure services using the extension methods
+        builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
 
-// Configure middleware
-app.ConfigureMiddleware();
+        // Configure CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+                policy.WithOrigins("http://localhost:3000") // Adjust to match frontend URL
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+        });
 
-// Map the endpoints
-app.MapEndpoints();
+        var app = builder.Build();
 
-await app.ApplyMigrationsAsync();
-await app.SeedDataAsync();
+        // Configure middleware using extension methods
+        app.UseCors("AllowFrontend"); // Apply the CORS middleware here
 
-if (app.Environment.IsDevelopment())
-{
-    app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
-}
-else
-{
-    app.Run(); // Use default settings in production
+        // Configure middleware
+        app.ConfigureMiddleware();
+
+        // Map the endpoints
+        app.MapEndpoints();
+
+        app.ApplyMigrationsAsync();
+        app.SeedDataAsync();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
+        }
+        else
+        {
+            app.Run(); // Use default settings in production
+        }
+    }
 }

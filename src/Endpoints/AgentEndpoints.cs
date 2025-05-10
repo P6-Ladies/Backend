@@ -70,8 +70,7 @@ namespace backend.Endpoints
             // Get a specific agent by its ID
             app.MapGet("/agents/{agentId}", async (int agentId, PrototypeDbContext dbContext) =>
             {
-                var agent = await dbContext.Agents
-                    .FirstOrDefaultAsync(a => a.Id == agentId);
+                var agent = await dbContext.Agents.FindAsync(agentId);
 
                 if (agent == null)
                 {
