@@ -13,7 +13,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using backend.Endpoints;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ServiceExtensions
     {

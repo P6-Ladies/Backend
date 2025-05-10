@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace backend.Data
+namespace Backend.Data
 {
     public class PrototypeDbContextFactory : IDesignTimeDbContextFactory<PrototypeDbContext>
     {

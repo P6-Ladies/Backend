@@ -9,7 +9,7 @@ using backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ApplicationBuilder
     {
