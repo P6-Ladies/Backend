@@ -1,10 +1,11 @@
 // src\Program.cs
 
-using backend.Extensions;
+using System.Threading.Tasks;
+using Backend.Extensions;
 
 public partial class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
         {
 
         var builder = WebApplication.CreateBuilder(args);
@@ -32,8 +33,8 @@ public partial class Program
         // Map the endpoints
         app.MapEndpoints();
 
-        app.ApplyMigrationsAsync();
-        app.SeedDataAsync();
+        await app.ApplyMigrationsAsync();
+        await app.SeedDataAsync();
 
         if (app.Environment.IsDevelopment())
         {

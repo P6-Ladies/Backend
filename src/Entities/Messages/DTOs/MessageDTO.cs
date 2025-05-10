@@ -1,7 +1,7 @@
 // src\Entities\Users\DTOs\CreateUserDTO.cs
 using System.ComponentModel.DataAnnotations;
 
-namespace backend.Entities.Messages.DTOs;
+namespace Backend.Entities.Messages.DTOs;
 public record MessageDTO
 {
     [Required]

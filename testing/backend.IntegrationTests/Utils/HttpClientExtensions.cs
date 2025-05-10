@@ -1,13 +1,13 @@
 
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using backend.Entities.Users;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
 
-namespace backend.IntegrationTests.Utils;
+namespace Backend.IntegrationTests.Utils;
 
 public static class HttpClientExtensions
 {

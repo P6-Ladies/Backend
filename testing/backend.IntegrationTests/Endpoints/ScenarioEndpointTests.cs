@@ -2,15 +2,15 @@
 
 using System.Net;
 using System.Net.Http.Json;
-using backend.Entities.Scenarios;
-using backend.Entities.Scenarios.DTOs;
+using Backend.Entities.Scenarios;
+using Backend.Entities.Scenarios.DTOs;
 using Microsoft.Extensions.DependencyInjection;
-using backend.Data;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Data;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
 using Xunit;
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class ScenarioEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

@@ -1,13 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
-using backend.Entities.Assessments;
-using backend.Entities.Assessments.DOTs;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Entities.Assessments;
+using Backend.Entities.Assessments.DTOs;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class AssessmentEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

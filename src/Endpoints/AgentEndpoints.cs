@@ -1,12 +1,12 @@
 // src\Endpoints\AgentEndpoints.cs
 
-using backend.Data;
-using backend.Entities.Agents;
-using backend.Entities.Agents.DTOs;
+using Backend.Data;
+using Backend.Entities.Agents;
+using Backend.Entities.Agents.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Endpoints
+namespace Backend.Endpoints
 {
     public static class AgentEndpoints
     {

@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace backend.IntegrationTests.Utils;
+namespace Backend.IntegrationTests.Utils;
 
 public class TestJwtToken
 {

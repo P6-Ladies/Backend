@@ -2,14 +2,14 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Entities.Users.DTOs;
-using backend.Entities.Users;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Entities.Users.DTOs;
+using Backend.Entities.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class LoginEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

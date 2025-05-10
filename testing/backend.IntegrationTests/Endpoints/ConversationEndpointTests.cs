@@ -1,14 +1,14 @@
 using System.Net;
 using System.Net.Http.Json;
-using backend.Entities.Conversations;
-using backend.Entities.Conversations.DTOs;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Entities.Users;
+using Backend.Entities.Conversations;
+using Backend.Entities.Conversations.DTOs;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Entities.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class ConversationEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

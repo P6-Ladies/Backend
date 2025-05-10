@@ -1,9 +1,9 @@
 // testing\backend.IntegrationTests\Utils\DbSeeders\BaseCaseDb.cs
-using backend.Data;
-using backend.Entities.Users;
+using Backend.Data;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 
-namespace backend.IntegrationTests.Utils.DbSeeders;
+namespace Backend.IntegrationTests.Utils.DbSeeders;
 
 public class BaseCaseDb : DbSeeder
 {

@@ -1,7 +1,7 @@
 // src/Entities/Agents/DTOs/AgentDTO.cs
 using System.ComponentModel.DataAnnotations;
 
-namespace backend.Entities.Agents.DTOs;
+namespace Backend.Entities.Agents.DTOs;
 
 public class AgentDTO
 {

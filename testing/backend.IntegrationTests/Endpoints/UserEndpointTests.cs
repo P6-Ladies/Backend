@@ -3,16 +3,16 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
-using backend;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Entities.Users.DTOs;
-using backend.Entities.Users;
-using backend.Data;
+using Backend;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Entities.Users.DTOs;
+using Backend.Entities.Users;
+using Backend.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 
-namespace backend.IntegrationTests.Endpoints
+namespace Backend.IntegrationTests.Endpoints
 {
     public class UserEndpointTests : IClassFixture<backendWebApplicationFactory>
     {

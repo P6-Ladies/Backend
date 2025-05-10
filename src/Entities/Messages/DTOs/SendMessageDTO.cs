@@ -1,13 +1,9 @@
 // src\Entities\Users\DTOs\CreateUserDTO.cs
-using System.ComponentModel.DataAnnotations;
-
-namespace backend.Entities.Messages.DTOs;
-public record SendMessageDTO
+namespace Backend.Entities.Messages.DTOs
 {
-    [Required]
-    [StringLength(2400)]
-    public required string Body { get; set; }
-
-    [Required]
-    public required int ConversationId { get; set; }
+    public class SendMessageDTO
+    {
+        public int ConversationId { get; set; }
+        public string? Message { get; set; }
+    }
 }

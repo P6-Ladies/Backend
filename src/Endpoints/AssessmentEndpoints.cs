@@ -1,12 +1,12 @@
 // src\Endpoints\AssessmentEndpoints.cs
 
-using backend.Data;
-using backend.Entities.Assessments;
-using backend.Entities.Assessments.DOTs;
+using Backend.Data;
+using Backend.Entities.Assessments;
+using Backend.Entities.Assessments.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Endpoints
+namespace Backend.Endpoints
 {
     public static class AssessmentEndpoints
     {

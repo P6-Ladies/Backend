@@ -1,9 +1,9 @@
-using backend.Data;
-using backend.Entities.Users;
+using Backend.Data;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
-using backend.IntegrationTests.Utils.DbSeeders;
+using Backend.IntegrationTests.Utils.DbSeeders;
 
-namespace backend.IntegrationTests.Utils.DbSeeders;
+namespace Backend.IntegrationTests.Utils.DbSeeders;
 
 public class EmptyDb : DbSeeder
 {

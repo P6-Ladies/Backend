@@ -1,16 +1,16 @@
 // backend.IntegrationTests/Utils/DbSeeders/DbSeeder.cs
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using backend.Data;
-using backend.Entities.Agents;
-using backend.Entities.Assessments;
-using backend.Entities.Conversations;
-using backend.Entities.Messages;
-using backend.Entities.Scenarios;
-using backend.Entities.Users;
+using Backend.Data;
+using Backend.Entities.Agents;
+using Backend.Entities.Assessments;
+using Backend.Entities.Conversations;
+using Backend.Entities.Messages;
+using Backend.Entities.Scenarios;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 
-namespace backend.IntegrationTests.Utils.DbSeeders;
+namespace Backend.IntegrationTests.Utils.DbSeeders;
 
 public abstract class DbSeeder
 {

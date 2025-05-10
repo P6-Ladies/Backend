@@ -1,10 +1,10 @@
 // testing\backend.IntegrationTests\Utils\ApplicationFactory.cs
 using System.Text;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Security.Authorization;
-using backend.Security.Configuration;
-using backend.Data;
-using backend.Entities.Users;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Security.Authorization;
+using Backend.Security.Configuration;
+using Backend.Data;
+using Backend.Entities.Users;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Tokens;
 
-namespace backend.IntegrationTests.Utils;
+namespace Backend.IntegrationTests.Utils;
 
 // This factory creates a backend web API configured for testing.
 public class backendWebApplicationFactory : WebApplicationFactory<Program>
@@ -74,6 +74,10 @@ public class backendWebApplicationFactory : WebApplicationFactory<Program>
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<PrototypeDbContext>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        
+        dbContext.Database.EnsureDeleted();
+        dbContext.Database.EnsureCreated();
+
         seeder.SeedData(dbContext, userManager);
     }
     public IServiceScope CreateScope()

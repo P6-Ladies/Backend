@@ -2,17 +2,17 @@
 
 using System.Net;
 using System.Net.Http.Json;
-using backend.Entities.Messages.DTOs;
-using backend.Entities.Messages;
+using Backend.Entities.Messages.DTOs;
+using Backend.Entities.Messages;
 using Microsoft.Extensions.DependencyInjection;
-using backend.Data;
+using Backend.Data;
 using System.Text.Json;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Entities.Conversations;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Entities.Conversations;
 using Xunit;
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class MessageEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

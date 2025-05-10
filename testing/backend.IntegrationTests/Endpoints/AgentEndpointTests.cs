@@ -2,16 +2,16 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Xunit;
-using backend.Entities.Agents;
-using backend.Entities.Agents.DTOs;
-using backend.IntegrationTests.Utils;
-using backend.IntegrationTests.Utils.DbSeeders;
-using backend.Data;
+using Backend.Entities.Agents;
+using Backend.Entities.Agents.DTOs;
+using Backend.IntegrationTests.Utils;
+using Backend.IntegrationTests.Utils.DbSeeders;
+using Backend.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace backend.IntegrationTests.Endpoints;
+namespace Backend.IntegrationTests.Endpoints;
 
 public class AgentEndpointTests : IClassFixture<backendWebApplicationFactory>
 {

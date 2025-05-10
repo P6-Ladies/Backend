@@ -1,9 +1,9 @@
 // src\Mappings\UserMapping.cs
-using backend.Endpoints;
-using backend.Entities.Conversations;
-using backend.Entities.Conversations.DTOs;
+using Backend.Endpoints;
+using Backend.Entities.Conversations;
+using Backend.Entities.Conversations.DTOs;
 
-namespace backend.Mappings;
+namespace Backend.Mappings;
 
 public static class ConversationMapping
 {
