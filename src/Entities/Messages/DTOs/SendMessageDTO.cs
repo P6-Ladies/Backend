@@ -10,5 +10,4 @@ public record SendMessageDTO
 
     [Required]
     public required int ConversationId { get; set; }
-
 }

@@ -1,58 +1,47 @@
 // src\Program.cs
 
-using backend.Data;
-using backend.Endpoints;
 using backend.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
 
-
-var builder = WebApplication.CreateBuilder(args);
-
-//Cross thing, something we might delete when going to production
-builder.Services.AddCors(options =>
+public partial class Program
 {
-    options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-});
+    public static void Main(string[] args)
+        {
 
-// Configure Services
-builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment).ConfigureIdentity().ConfigureJwt(builder.Configuration).ConfigureAuthorizationPolicies().ConfigureSwagger();
+        var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.User.AllowedUserNameCharacters =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-});
+        // Configure services using the extension methods
+        builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
 
-var app = builder.Build();
+        // Configure CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+                policy.WithOrigins("http://localhost:3000") // Adjust to match frontend URL
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+        });
 
-app.UseCors("AllowFrontend");
+        var app = builder.Build();
 
-// Configure middleware
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseStaticFiles();
+        // Configure middleware using extension methods
+        app.UseCors("AllowFrontend"); // Apply the CORS middleware here
 
-// Map Endpoints
-app.MapLoginEndpoint();
-app.MapDeepSeekEndpoints();
-app.MapUsersEndpoints();
-app.MapConversationEndpoints();
-app.MapMessageEndpoints();
+        // Configure middleware
+        app.ConfigureMiddleware();
 
-await app.ApplyMigrationsAsync();
-await app.SeedDataAsync();
+        // Map the endpoints
+        app.MapEndpoints();
 
-if (app.Environment.IsDevelopment())
-{
-    app.Run("http://0.0.0.0:5171");
-}
-else
-{
-    app.Run();
+        app.ApplyMigrationsAsync();
+        app.SeedDataAsync();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
+        }
+        else
+        {
+            app.Run(); // Use default settings in production
+        }
+    }
 }

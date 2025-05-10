@@ -22,5 +22,6 @@
         <Content Include="Modules\*.py">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <InternalsVisibleTo Include="backend.IntegrationTests" />
     </ItemGroup>
 </Project>

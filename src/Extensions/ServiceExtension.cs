@@ -1,4 +1,5 @@
 // src\Extensions\ServiceExtension.cs
+
 using backend.Security.Configuration;
 using backend.Data;
 using backend.Entities.Users;
@@ -10,11 +11,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using backend.Endpoints;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ServiceExtensions
     {
+        /// <summary>
+        /// Configures the database connection using the provided settings.
+        /// </summary>
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
             services.AddDbContext<PrototypeDbContext>(options => 
@@ -23,6 +28,9 @@ namespace backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures the Identity system with custom settings for password validation.
+        /// </summary>
         public static IServiceCollection ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<User, IdentityRole<int>>(options =>
@@ -40,6 +48,9 @@ namespace backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures JWT authentication with the provided settings for token validation.
+        /// </summary>
         public static IServiceCollection ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettingsSection = configuration.GetSection("JwtSettings");
@@ -72,6 +83,9 @@ namespace backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures authorization policies for custom requirements.
+        /// </summary>
         public static IServiceCollection ConfigureAuthorizationPolicies(this IServiceCollection services)
         {
             services.AddScoped<IAuthorizationHandler, OwnDataAuthorizationHandler>();
@@ -85,6 +99,9 @@ namespace backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures Swagger API documentation and security definitions.
+        /// </summary>
         public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
@@ -118,6 +135,58 @@ namespace backend.Extensions
             });
 
             return services;
+        }
+    
+        /// <summary>
+        /// Configures all necessary services including database, identity, JWT, authorization, and Swagger.
+        /// </summary>
+        public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
+        {
+            services.ConfigureDatabase(configuration, env)
+                    .ConfigureIdentity()
+                    .ConfigureJwt(configuration)
+                    .ConfigureAuthorizationPolicies()
+                    .ConfigureSwagger();
+
+            // Configuring Identity options for allowed characters in usernames
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+            });
+
+            // Configure external HTTP client (example: for Hugging Face API)
+            services.AddHttpClient("HF", client =>
+            {
+                client.BaseAddress = new Uri("http://huggingface:5000");
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Configures middleware for the application.
+        /// </summary>
+        public static void ConfigureMiddleware(this WebApplication app)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
+
+        /// <summary>
+        /// Maps the application's API endpoints.
+        /// </summary>
+        public static void MapEndpoints(this WebApplication app)
+        {
+            app.MapLoginEndpoint();
+            app.MapUsersEndpoints();
+            app.MapConversationEndpoints();
+            app.MapMessageEndpoints();
+            app.MapAgentEndpoints();
+            app.MapAssessmentEndpoints();
+            app.MapScenarioEndpoints();
         }
     }
 }

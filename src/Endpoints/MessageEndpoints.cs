@@ -1,73 +1,138 @@
-// src\Endpoints\UserEndpoints.cs
+// src\Endpoints\MessageEndpoints.cs
 
-using backend.Entities.Conversations.DTOs;
-using backend.Entities.Conversations;
-using backend.Mappings;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using backend.Data;
-using backend.Entities.Agents;
-using backend.Entities.Scenarios;
-using Microsoft.EntityFrameworkCore;
 using backend.Entities.Messages;
+using backend.Entities.Conversations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using backend.Entities.Messages.DTOs;
+using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
 
-namespace backend.Endpoints;
-
-public static class MessageEndpoints
+namespace backend.Endpoints
 {
-    public static RouteGroupBuilder MapMessageEndpoints(this WebApplication app)
+    public static class MessageEndpoints
     {
-        var group = app.MapGroup("messages");
-
-        group.MapGet("/{conversationId}", async (int conversationId, PrototypeDbContext dBContext) =>
+        // Register the message-related endpoints
+        public static void MapMessageEndpoints(this IEndpointRouteBuilder app)
         {
-            
-            try {
-                var conversation = dBContext.Conversations.Single(c => c.Id == conversationId);
-                List<Message> messages = dBContext.Messages.FromSqlRaw("SELECT * FROM messages WHERE \"ConversationId\" = {0}", conversationId).ToList();
-                
-                List<MessageDTO> dtoMessages = new List<MessageDTO>();
-                foreach (Message message in messages) {
-                    dtoMessages.Add(message.ToDTO());
+            // Add a message to a conversation
+            app.MapPost("/conversations/{conversationId}/messages", async (int conversationId, [FromBody] SendMessageDTO request, PrototypeDbContext dbContext, IHttpClientFactory httpClientFactory, HttpContext httpContext) =>
+            {
+                if (string.IsNullOrEmpty(request.Message))
+                {
+                    return Results.BadRequest("Message cannot be empty.");
                 }
-                ConversationMessagesDTO finalDTO = new ConversationMessagesDTO{Title = conversation.Title, Completed = conversation.Completed, Messages = dtoMessages};
-    
-                
-                return Results.Ok(finalDTO);
-            } catch (Exception ex) {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
-            
-        })
-        .WithName("ShowConversationMessages")
-        .WithTags("Messages")
-        .WithDescription("Shows title, completed and all conversation messages to user.")
-        .Produces<ConversationMessagesDTO>(StatusCodes.Status201Created)
-        .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
 
-        group.MapPost("/", async (SendMessageDTO sentMessageDTO, PrototypeDbContext dBContext) =>
-        {
-            
-            try {
-                Message message = sentMessageDTO.ToEntity();
-                dBContext.Messages.Add(message);
-                await dBContext.SaveChangesAsync();
-            
-                return Results.Ok(message.ToDTO());
-            } catch (Exception ex) {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
-            
-        })
-        .WithName("SendMessage")
-        .WithTags("Messages")
-        .WithDescription("Sends a message to the database.")
-        .Produces<MessageDTO>(StatusCodes.Status201Created)
-        .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
+                try
+                {
+                    // Retrieve the conversation and agent from the database
+                    var conversation = await dbContext.Conversations
+                        .Include(c => c.Agent)
+                        .FirstOrDefaultAsync(c => c.Id == conversationId);
+                    
+                    if (conversation == null)
+                    {
+                        return Results.NotFound("Conversation not found.");
+                    }
 
-    return group;
+                    // Construct the JSON body for the Python microservice
+                    var requestBody = new
+                    {
+                        prompt = request.Message,
+                        max_length = 256 // Set maximum length for the LLM response
+                    };
+
+                    var jsonBody = JsonSerializer.Serialize(requestBody);
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+                    var client = httpClientFactory.CreateClient("HF");
+
+                    // Send request to the Python microservice to generate the response
+                    using var response = await client.PostAsync("generate", content, httpContext.RequestAborted);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var errorBody = await response.Content.ReadAsStringAsync();
+                        return Results.Problem($"Error from Python service: {response.StatusCode}");
+                    }
+
+                    // Parse the generated text from the response
+                    var responseJson = await response.Content.ReadAsStringAsync();
+                    var generatedText = JsonDocument.Parse(responseJson).RootElement.GetProperty("result").GetString();
+
+                    if (string.IsNullOrEmpty(generatedText))
+                    {
+                        return Results.Problem("Failed to generate a valid response.");
+                    }
+
+                    // Store the user message and agent response in the database
+                    var userMessage = new Message
+                    {
+                        ConversationId = conversationId,
+                        Body = request.Message,
+                        UserSent = true,
+                        ReceivedAt = DateTime.UtcNow
+                    };
+                    var agentResponse = new Message
+                    {
+                        ConversationId = conversationId,
+                        Body = generatedText,
+                        UserSent = false,
+                        ReceivedAt = DateTime.UtcNow
+                    };
+
+                    dbContext.Messages.AddRange(userMessage, agentResponse);
+                    await dbContext.SaveChangesAsync();
+
+                    // Return the latest message (agent's response as the last message)
+                    return Results.Ok(new { response = generatedText, message = agentResponse });
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"An error occurred: {ex.Message}");
+                }
+            })
+            .WithName("AddMessageToConversation")
+            .WithTags("Messages")
+            .WithDescription("Adds a message to a conversation.")
+            .Accepts<SendMessageDTO>("application/json")
+            .Produces<Message>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status404NotFound);
+
+            // Get all messages in a conversation (with text, date, and sender)
+            app.MapGet("/conversations/{conversationId}/messages", async (int conversationId, PrototypeDbContext dbContext) =>
+            {
+                var conversation = await dbContext.Conversations
+                    .Include(c => c.Messages)
+                    .FirstOrDefaultAsync(c => c.Id == conversationId);
+
+                if (conversation == null)
+                {
+                    return Results.NotFound("Conversation not found.");
+                }
+
+                // Retrieve all messages and include who sent them (user/agent) and timestamp
+                var messages = conversation.Messages
+                    .Select(m => new
+                    {
+                        m.Body,
+                        m.ReceivedAt,
+                        Sender = m.UserSent ? "User" : "Agent"
+                    })
+                    .OrderBy(m => m.ReceivedAt)
+                    .ToList();
+
+                return Results.Ok(messages);
+            })
+            .WithName("GetMessagesInConversation")
+            .WithTags("Messages")
+            .WithDescription("Retrieves all messages in a conversation, including who sent them and when.")
+            .Produces<List<Message>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+        }
     }
 }

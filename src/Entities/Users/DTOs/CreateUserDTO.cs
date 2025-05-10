@@ -1,7 +1,7 @@
 // src\Entities\Users\DTOs\CreateUserDTO.cs
 using System.ComponentModel.DataAnnotations;
 
-namespace backend.Entities.Users.DTOs;
+namespace Backend.Entities.Users.DTOs;
 public record CreateUserDTO
 {
     [Required]
