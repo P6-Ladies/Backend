@@ -15,7 +15,11 @@ services:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "YourStrong!Passw0rd"
       POSTGRES_DB: "your_database_name"
-
+      SMTP_HOST: "mailhog"
+      SMTP_PORT: "1025"
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      SMTP_USE_SSL: "false"
     ports:
       - "80:5171"
 
@@ -77,6 +81,8 @@ services:
 
     volumes:
       - p6_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
 volumes:
   p6_db_data:

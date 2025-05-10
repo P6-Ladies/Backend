@@ -1,13 +1,13 @@
 // src\Entities\Conversations\Conversations.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using backend.Entities.Agents;
-using backend.Entities.Assessments;
-using backend.Entities.Messages;
-using backend.Entities.Scenarios;
-using backend.Entities.Users;
+using Backend.Entities.Agents;
+using Backend.Entities.Assessments;
+using Backend.Entities.Messages;
+using Backend.Entities.Scenarios;
+using Backend.Entities.Users;
 
-namespace backend.Entities.Conversations;
+namespace Backend.Entities.Conversations;
 public class Conversation
 {
     [Key]
@@ -23,6 +23,8 @@ public class Conversation
     public int AgentId { get; set; }
 
     public int? ScenarioId { get; set; }
+
+    public bool Completed {get; set; } = false;
 
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

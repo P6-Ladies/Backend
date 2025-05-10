@@ -1,7 +1,13 @@
+// src\Entities\Users\DTOs\CreateUserDTO.cs
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Entities.Messages.DTOs;
-// DTO for adding a message to a conversation
-public class SendMessageDTO
+public record SendMessageDTO
 {
-    public int ConversationId { get; set; }
-    public string? Message { get; set; }
+    [Required]
+    [StringLength(2400)]
+    public required string Body { get; set; }
+
+    [Required]
+    public required int ConversationId { get; set; }
 }

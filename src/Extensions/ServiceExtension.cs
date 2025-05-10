@@ -13,7 +13,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using backend.Endpoints;
 
-namespace backend.Extensions
+namespace Backend.Extensions
 {
     public static class ServiceExtensions
     {
@@ -173,7 +173,6 @@ namespace backend.Extensions
             app.UseSwaggerUI();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseStaticFiles();
         }
 
         /// <summary>
@@ -182,7 +181,6 @@ namespace backend.Extensions
         public static void MapEndpoints(this WebApplication app)
         {
             app.MapLoginEndpoint();
-            app.MapDeepSeekEndpoints();
             app.MapUsersEndpoints();
             app.MapConversationEndpoints();
             app.MapMessageEndpoints();

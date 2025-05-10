@@ -1,13 +1,13 @@
 // src\Endpoints\UserEndpoints.cs
 
-using backend.Entities.Users;
-using backend.Entities.Users.DTOs;
-using backend.Mappings;
+using Backend.Entities.Users;
+using Backend.Entities.Users.DTOs;
+using Backend.Mappings;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace backend.Endpoints;
+namespace Backend.Endpoints;
 
 public static class UsersEndpoints
 {
@@ -18,6 +18,12 @@ public static class UsersEndpoints
         // POST /users
         group.MapPost("/", async (CreateUserDTO newUser, UserManager<User> userManager) =>
         {
+            if (string.IsNullOrWhiteSpace(newUser.Email) || !newUser.Email.Contains("@"))
+                return Results.BadRequest("Invalid email");
+
+            if (newUser.Password.Length < 8)
+                return Results.BadRequest("Password too weak");
+                
             User user = newUser.ToEntity();
             var result = await userManager.CreateAsync(user, newUser.Password);
             return result.Succeeded 

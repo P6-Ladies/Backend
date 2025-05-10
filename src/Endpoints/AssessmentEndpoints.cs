@@ -13,28 +13,53 @@ namespace backend.Endpoints
         // Register the assessment-related endpoints
         public static void MapAssessmentEndpoints(this IEndpointRouteBuilder app)
         {
-            // Create a new assessment
-            app.MapPost("/assessments", async ([FromBody] CreateAssessmentDTO request, PrototypeDbContext dbContext) =>
+            // Create a new assessment by Python microservice
+            app.MapPost("/assessments", async ([FromServices] IHttpClientFactory http, [FromBody] CreateAssessmentDTO request, PrototypeDbContext dbContext) =>
             {
-                // Ensure the conversation exists
-                var conversation = await dbContext.Conversations.FindAsync(request.ConversationId);
-                if (conversation == null)
-                {
+                // 1. Verify conversation exists
+                var conversation = await dbContext.Conversations
+                    .Include(c => c.Messages)
+                    .FirstOrDefaultAsync(c => c.Id == request.ConversationId);
+
+                if (conversation is null)
                     return Results.NotFound("Conversation not found.");
+
+                // 2. Build the raw text payload
+                var convoText = string.Join("\n",
+                    conversation.Messages
+                                .OrderBy(m => m.ReceivedAt)
+                                .Select(m => $"{(m.UserSent ? "User" : "Agent")}: {m.Body}")
+                );
+
+                // 3. Call the python /assess endpoint
+                var client = http.CreateClient("HF");
+                var response = await client.PostAsJsonAsync("/assess", new { conversation = convoText });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    return Results.Problem(
+                        detail: $"Assessment service error: {err}",
+                        statusCode: (int)response.StatusCode);
                 }
 
-                // Create a new assessment
+                // 4. Deserialize into our AssessmentDTO
+                var dto = await response.Content.ReadFromJsonAsync<AssessmentResultDTO>();
+                if (dto is null)
+                    return Results.Problem("Invalid response from assessment service.");
+
+                // 5. Map & persist
                 var assessment = new Assessment
                 {
-                    UserId = request.UserId,
-                    ConversationId = request.ConversationId,
-                    Body = request.Body,
-                    ConflictManagementStrategy = request.ConflictManagementStrategy,
-                    Openness = request.Openness,
-                    Conscientiousness = request.Conscientiousness,
-                    Extroversion = request.Extroversion,
-                    Agreeableness = request.Agreeableness,
-                    Neuroticism = request.Neuroticism
+                    UserId                        = request.UserId,
+                    ConversationId                = request.ConversationId,
+                    Body                          = dto.Body,
+                    ConflictManagementStrategy    = dto.ConflictManagementStrategy,
+                    Openness                      = dto.Openness,
+                    Conscientiousness             = dto.Conscientiousness,
+                    Extroversion                  = dto.Extroversion,
+                    Agreeableness                 = dto.Agreeableness,
+                    Neuroticism                   = dto.Neuroticism
                 };
 
                 dbContext.Assessments.Add(assessment);
@@ -44,11 +69,11 @@ namespace backend.Endpoints
             })
             .WithName("CreateAssessment")
             .WithTags("Assessments")
-            .WithDescription("Creates a new assessment for a conversation.")
+            .WithDescription("Creates a new assessment by invoking the Python microservice.")
             .Accepts<CreateAssessmentDTO>("application/json")
             .Produces<Assessment>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status502BadGateway);
 
             // Get all assessments for a user
             app.MapGet("/users/{userId}/assessments", async (int userId, PrototypeDbContext dbContext) =>
@@ -104,11 +129,11 @@ namespace backend.Endpoints
                 // Update properties
                 assessment.Body = request.Body ?? assessment.Body;
                 assessment.ConflictManagementStrategy = request.ConflictManagementStrategy ?? assessment.ConflictManagementStrategy;
-                assessment.Openness = request.Openness ?? assessment.Openness;
-                assessment.Conscientiousness = request.Conscientiousness ?? assessment.Conscientiousness;
-                assessment.Extroversion = request.Extroversion ?? assessment.Extroversion;
-                assessment.Agreeableness = request.Agreeableness ?? assessment.Agreeableness;
-                assessment.Neuroticism = request.Neuroticism ?? assessment.Neuroticism;
+                assessment.Openness = request.Openness = (int)assessment.Openness;
+                assessment.Conscientiousness = request.Conscientiousness = (int)assessment.Conscientiousness;
+                assessment.Extroversion = request.Extroversion = (int)assessment.Extroversion;
+                assessment.Agreeableness = request.Agreeableness = (int)assessment.Agreeableness;
+                assessment.Neuroticism = request.Neuroticism = (int)assessment.Neuroticism;
 
                 dbContext.Assessments.Update(assessment);
                 await dbContext.SaveChangesAsync();

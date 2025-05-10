@@ -25,7 +25,7 @@ RUN pip install -r requirements.txt
 
 # Copy in the rest of the application code
 COPY . .
-RUN ls -l src/Modules
+
 # Expose the port where the Python service will run
 EXPOSE 5000
 
