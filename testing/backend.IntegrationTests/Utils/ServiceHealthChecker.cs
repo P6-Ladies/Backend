@@ -1,24 +1,41 @@
 // File: Utils/ServiceHealthChecker.cs
 
+using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 
-namespace Backend.IntegrationTests.Utils;
-
-public static class ServiceHealthChecker
+namespace Backend.IntegrationTests.Utils
 {
-    private static readonly HttpClient client = new();
-
-    public static async Task<bool> IsPythonServiceAvailableAsync()
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public sealed class SkipIfPythonOfflineAttribute : FactAttribute
     {
-        try
+        private static readonly HttpClient _client = new();
+        private const string HealthCheckUrl = "http://localhost:5000/health";
+
+        private static readonly Task<bool> _isAvailable = CheckPythonServiceAsync();
+
+        public SkipIfPythonOfflineAttribute()
         {
-            var response = await client.GetAsync("http://localhost:5000/health");
-            return response.IsSuccessStatusCode;
+            if (!_isAvailable.GetAwaiter().GetResult())
+            {
+                Skip = $"Skipping test: Python server is not running at {HealthCheckUrl}.";
+            }
         }
-        catch
+
+        private static async Task<bool> CheckPythonServiceAsync()
         {
-            return false;
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+                var response = await _client.GetAsync(HealthCheckUrl, cts.Token);
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
