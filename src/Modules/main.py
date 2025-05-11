@@ -1,3 +1,5 @@
+# path: src/Modules/api/endpoints.py
+
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import Optional, List, Dict
