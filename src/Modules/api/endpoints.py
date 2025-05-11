@@ -18,3 +18,7 @@ def assess(request: AssessRequest):
 @router.post("/PythonServerTest")
 def generate_text_test(request: GenerateRequest):
     return {"Throughput"}
+
+@router.get("/health")
+def health_check():
+    return {"status": "ok"}

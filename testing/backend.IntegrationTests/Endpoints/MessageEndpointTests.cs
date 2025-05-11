@@ -11,6 +11,7 @@ using Backend.IntegrationTests.Utils;
 using Backend.IntegrationTests.Utils.DbSeeders;
 using Backend.Entities.Conversations;
 using Xunit;
+using ServiceHealthChecker = Backend.IntegrationTests.Utils.ServiceHealthChecker;
 
 namespace Backend.IntegrationTests.Endpoints;
 
@@ -26,6 +27,8 @@ public class MessageEndpointTests : IClassFixture<backendWebApplicationFactory>
     [Fact]
     public async Task AddMessageToConversation_ShouldReturnOk_WhenMessageIsValid()
     {
+        if (!await ServiceHealthChecker.IsPythonServiceAvailableAsync())
+            throw new Xunit.Sdk.SkipException("Skipping test: Python server is not running.");
         var client = _factory.CreateClientWithSeed(new BaseCaseDb(), out var user);
         using var scope = _factory.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PrototypeDbContext>();
