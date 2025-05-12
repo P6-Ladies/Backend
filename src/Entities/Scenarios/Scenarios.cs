@@ -17,8 +17,8 @@ public class Scenario
     public string? SettingPrompt { get; set; }
     public string? ConflictPrompt { get; set; }
     public string? AdditionalPrompt { get; set; }
-    public string InitialUserMessage { get; set; }
-    public string InitialAgentMessage { get; set; }
+    public string? InitialUserMessage { get; set; }
+    public string? InitialAgentMessage { get; set; }
     public DateTime CreatedAt { get; internal set; }
 
     // Navigation property

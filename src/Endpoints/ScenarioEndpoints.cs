@@ -29,7 +29,9 @@ namespace backend.Endpoints
                     SettingPrompt = request.SettingPrompt,
                     ConflictPrompt = request.ConflictPrompt,
                     AdditionalPrompt = request.AdditionalPrompt,
-                    CreatedAt = DateTime.UtcNow 
+                    CreatedAt = DateTime.UtcNow,
+                    InitialAgentMessage = request.InitialAgentMessage,
+                    InitialUserMessage = request.InitialUserMessage,
                 };
 
                 dbContext.Scenarios.Add(scenario);
