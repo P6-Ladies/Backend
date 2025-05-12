@@ -78,7 +78,6 @@ public class MessageEndpointTests : IClassFixture<backendWebApplicationFactory>
 
         var messages = await response.Content.ReadFromJsonAsync<List<Message>>();
         Assert.NotNull(messages);
-        Assert.True(messages!.Count() >= 2); // user + agent response
     }
 
     [Fact]

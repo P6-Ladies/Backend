@@ -46,14 +46,15 @@ public class ConversationEndpointTests : IClassFixture<backendWebApplicationFact
     }
 
     [Fact]
-    public async Task GetUserConversations_ShouldReturnOk_WhenConversationsExist()
+    public async Task GetUserConversations_ShouldReturnOk_WhenConversationsExist() // Seeder issues??
     {
         var client = _factory.CreateClientWithSeed(new BaseCaseDb(), out var user);
-        var response = await client.GetAsync($"/users/{user.Id}/conversations");
+        var response = await client.GetAsync($"/users/{user.Id}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var conversations = await response.Content.ReadFromJsonAsync<List<Conversation>>();
-        Assert.NotEmpty(conversations);
+        var result = await response.Content.ReadFromJsonAsync<ListConversationsDTO>();
+        Assert.NotNull(result?.Conversations);
+        Assert.NotEmpty(result.Conversations);
     }
 
     [Fact]
@@ -81,8 +82,8 @@ public class ConversationEndpointTests : IClassFixture<backendWebApplicationFact
         var response = await client.PutAsync($"/conversations/{conversation.Id}/complete", null);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var updated = await response.Content.ReadFromJsonAsync<Conversation>();
-        Assert.True(updated?.Completed);
+        var message = await response.Content.ReadFromJsonAsync<string>();
+        Assert.Equal("Marked as completed.", message);
     }
 
     [Fact]
