@@ -1,6 +1,7 @@
 namespace backend.Entities.Messages.DTOs;
 // DTO for adding a message to a conversation
-public sealed class SendMessageDTO
+public class SendMessageDTO
 {
-    public string Message { get; set; } = default!;
+    //public int ConversationId { get; set; }
+    public string? Message { get; set; }
 }

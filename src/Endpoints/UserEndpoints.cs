@@ -44,7 +44,7 @@ public static class UsersEndpoints
         .WithName("GetUser")
         .WithTags("Users")
         .WithDescription("Returns a user by id")
-        //.RequireAuthorization("OwnData")
+        .RequireAuthorization("OwnData")
         .Produces<UserDTO>()
         .Produces<NotFound>(StatusCodes.Status404NotFound);
         

@@ -128,6 +128,13 @@ namespace backend.Endpoints
                     }
 
                     // Store the user message and agent response in the database
+                    var userMessage = new Message
+                    {
+                        ConversationId = conversationId,
+                        Body = request.Message,
+                        UserSent = true,
+                        ReceivedAt = DateTime.UtcNow
+                    };
                     var agentResponse = new Message
                     {
                         ConversationId = conversationId,
@@ -157,6 +164,14 @@ namespace backend.Endpoints
             // Get all messages in a conversation (with text, date, and sender)
             app.MapGet("/conversations/{conversationId}/messages", async (int conversationId, PrototypeDbContext dbContext) =>
             {
+                var conversation = await dbContext.Conversations
+                    .Include(c => c.Messages)
+                    .FirstOrDefaultAsync(c => c.Id == conversationId);
+
+                if (conversation == null)
+                {
+                    return Results.NotFound("Conversation not found.");
+                }
 
                 // Retrieve all messages and include who sent them (user/agent) and timestamp
                 var messages = dbContext.Messages

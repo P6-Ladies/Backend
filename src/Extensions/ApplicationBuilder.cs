@@ -40,8 +40,8 @@ namespace backend.Extensions
                 var defaultAgent = new Agent
                 {
                     UserId = user.Id,
-                    Name = "Samuel Cox",
-                    PromptBody = "You are a professor of computer science, who seems to be a little in over his head.",
+                    Name = "Default Assistant",
+                    PromptBody = "You are a helpful assistant.",
                     Openness = 5,
                     Conscientiousness = 5,
                     Extroversion = 5,
@@ -58,10 +58,10 @@ namespace backend.Extensions
                 var defaultScenario = new Scenario
                 {
                     UserId = user.Id,
-                    Name = "Supervisor Meeting",
-                    SettingPrompt = "You are attending a meeting of a computer science project.",
-                    ConflictPrompt = "The team spends most of their time doing nonsensical unrelated stuff, and are falling behind schedule.",
-                    AdditionalPrompt = "",
+                    Name = "Default Scenario",
+                    SettingPrompt = "You are in a default scenario.",
+                    ConflictPrompt = "A sample conflict arises.",
+                    AdditionalPrompt = "Additional context information.",
                     CreatedAt = DateTime.UtcNow
                 };
                 dbContext.Scenarios.Add(defaultScenario);
@@ -98,10 +98,17 @@ namespace backend.Extensions
                     new Message
                     {
                         ConversationId = conversation.Id,
-                        UserSent = false,
-                        Body = "Good morning team!",
+                        UserSent = true,
+                        Body = "Hello, how are you?",
                         ReceivedAt = DateTime.UtcNow
                     },
+                    new Message
+                    {
+                        ConversationId = conversation.Id,
+                        UserSent = false,
+                        Body = "I'm good, thanks! How can I assist you today?",
+                        ReceivedAt = DateTime.UtcNow
+                    }
                 };
                 dbContext.Messages.AddRange(messages);
                 await dbContext.SaveChangesAsync();
