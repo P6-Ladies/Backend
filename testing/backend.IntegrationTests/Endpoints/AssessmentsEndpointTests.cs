@@ -1,7 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.AspNetCore.Identity;
 using Backend.Entities.Assessments;
 using Backend.Entities.Assessments.DTOs;
+using Backend.Entities.Users;
 using Backend.IntegrationTests.Utils;
 using Backend.IntegrationTests.Utils.DbSeeders;
 using Microsoft.Extensions.DependencyInjection;
@@ -88,7 +90,15 @@ public class AssessmentEndpointTests : IClassFixture<backendWebApplicationFactor
     [Fact]
     public async Task GetUserAssessments_ShouldReturnNotFound_WhenNoneExist()
     {
-        var client = _factory.CreateClientWithSeed(new EmptyDb(), out var user);
+        var client = _factory.CreateClientWithSeed(new EmptyDb(), out _);
+
+        // Create a new scope to access services
+        using var scope = _factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var seeder = new EmptyDb();
+
+        seeder.SeedUsers(userManager);
+        var user = seeder.Users["testuser"];
 
         var response = await client.GetAsync($"/users/{user.Id}/assessments");
 

@@ -87,7 +87,7 @@ namespace Backend.Data
                 // user_id, agent_id required
                 entity.Property(c => c.UserId).IsRequired();
                 entity.Property(c => c.AgentId).IsRequired();
-                entity.Property(c => c.ScenarioId).IsRequired();
+                entity.Property(c => c.ScenarioId).IsRequired(false);
                 entity.Property(c => c.Title).IsRequired();
                 // Relationship: Conversation -> User
                 entity.HasOne(c => c.User)

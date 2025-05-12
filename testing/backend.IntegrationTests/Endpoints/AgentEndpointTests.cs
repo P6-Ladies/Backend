@@ -130,9 +130,10 @@ public class AgentEndpointTests : IClassFixture<backendWebApplicationFactory>
     [Fact]
     public async Task GetAgentById_ShouldReturnAgent_WhenExists()
     {
-        var client = _factory.CreateClientWithSeed(new BaseCaseDb(), out var user);
+        var seeder = new BaseCaseDb();
+        var client = _factory.CreateClientWithSeed(seeder, out var user);
 
-        var agentId = new BaseCaseDb().Agents.First().Id;
+        var agentId = seeder.Agents.First().Id;
         var response = await client.GetAsync($"/agents/{agentId}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
