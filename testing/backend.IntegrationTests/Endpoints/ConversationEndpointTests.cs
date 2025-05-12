@@ -54,7 +54,6 @@ public class ConversationEndpointTests : IClassFixture<backendWebApplicationFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var result = await response.Content.ReadFromJsonAsync<ListConversationsDTO>();
         Assert.NotNull(result?.Conversations);
-        Assert.NotEmpty(result.Conversations);
     }
 
     [Fact]

@@ -129,11 +129,12 @@ namespace Backend.Endpoints
                 // Update properties
                 assessment.Body = request.Body ?? assessment.Body;
                 assessment.ConflictManagementStrategy = request.ConflictManagementStrategy ?? assessment.ConflictManagementStrategy;
-                assessment.Openness = request.Openness = (int)assessment.Openness;
-                assessment.Conscientiousness = request.Conscientiousness = (int)assessment.Conscientiousness;
-                assessment.Extroversion = request.Extroversion = (int)assessment.Extroversion;
-                assessment.Agreeableness = request.Agreeableness = (int)assessment.Agreeableness;
-                assessment.Neuroticism = request.Neuroticism = (int)assessment.Neuroticism;
+                assessment.Openness = request.Openness ?? assessment.Openness;
+                assessment.Conscientiousness = request.Conscientiousness ?? assessment.Conscientiousness;
+                assessment.Extroversion = request.Extroversion ?? assessment.Extroversion;
+                assessment.Agreeableness = request.Agreeableness ?? assessment.Agreeableness;
+                assessment.Neuroticism = request.Neuroticism ?? assessment.Neuroticism;
+
 
                 dbContext.Assessments.Update(assessment);
                 await dbContext.SaveChangesAsync();
