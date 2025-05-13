@@ -10,11 +10,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Backend.Endpoints;
 
 namespace Backend.Extensions
 {
     public static class ServiceExtensions
     {
+        /// <summary>
+        /// Configures the database connection using the provided settings.
+        /// </summary>
         public static IServiceCollection ConfigureDatabase(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
             services.AddDbContext<PrototypeDbContext>(options => 
@@ -23,6 +27,9 @@ namespace Backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures the Identity system with custom settings for password validation.
+        /// </summary>
         public static IServiceCollection ConfigureIdentity(this IServiceCollection services)
         {
             services.AddIdentity<User, IdentityRole<int>>(options =>
@@ -40,6 +47,9 @@ namespace Backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures JWT authentication with the provided settings for token validation.
+        /// </summary>
         public static IServiceCollection ConfigureJwt(this IServiceCollection services, IConfiguration configuration)
         {
             var jwtSettingsSection = configuration.GetSection("JwtSettings");
@@ -72,6 +82,9 @@ namespace Backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures authorization policies for custom requirements.
+        /// </summary>
         public static IServiceCollection ConfigureAuthorizationPolicies(this IServiceCollection services)
         {
             services.AddScoped<IAuthorizationHandler, OwnDataAuthorizationHandler>();
@@ -85,6 +98,9 @@ namespace Backend.Extensions
             return services;
         }
 
+        /// <summary>
+        /// Configures Swagger API documentation and security definitions.
+        /// </summary>
         public static IServiceCollection ConfigureSwagger(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
@@ -133,27 +149,29 @@ namespace Backend.Extensions
             return services;
         }
 
-        public static IServiceCollection ConfigureEmailServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+        /// <summary>
+        /// Configures middleware for the application.
+        /// </summary>
+        public static void ConfigureMiddleware(this WebApplication app)
         {
-        services.AddFluentEmail("noreply@prototype.local")
-            .AddSmtpSender(
-                host: configuration["SMTP_HOST"] ?? "localhost",
-                port: int.Parse(configuration["SMTP_PORT"] ?? "1025"),
-//              ssl: bool.Parse(configuration["SMTP_USE_SSL"] ?? "false"),
-                username: configuration["SMTP_USERNAME"],
-                password: configuration["SMTP_PASSWORD"]);
-                
-        return services;
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseAuthentication();
+            app.UseAuthorization();
         }
 
-        public static IServiceCollection ConfigureUserIdentity(this IServiceCollection services)
+        /// <summary>
+        /// Maps the application's API endpoints.
+        /// </summary>
+        public static void MapEndpoints(this WebApplication app)
         {
-            services.Configure<IdentityOptions>(options =>
-            {
-                options.User.AllowedUserNameCharacters =
-                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            });
-        return services;
+            app.MapLoginEndpoint();
+            app.MapUsersEndpoints();
+            app.MapConversationEndpoints();
+            app.MapMessageEndpoints();
+            app.MapAgentEndpoints();
+            app.MapAssessmentEndpoints();
+            app.MapScenarioEndpoints();
         }
     }
 }

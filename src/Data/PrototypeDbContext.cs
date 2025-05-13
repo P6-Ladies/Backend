@@ -88,6 +88,7 @@ namespace Backend.Data
                 entity.Property(c => c.UserId).IsRequired();
                 entity.Property(c => c.AgentId).IsRequired();
                 entity.Property(c => c.ScenarioId).IsRequired();
+                entity.Property(c => c.Title).IsRequired();
                 // Relationship: Conversation -> User
                 entity.HasOne(c => c.User)
                     .WithMany(u => u.Conversations)
@@ -124,7 +125,7 @@ namespace Backend.Data
 
                 // Relationship: Message -> Conversation
                 entity.HasOne(m => m.Conversation)
-                    .WithMany(c => c.Messages)
+                    .WithMany()
                     .HasForeignKey(m => m.ConversationId)
                     .OnDelete(DeleteBehavior.Cascade);
 

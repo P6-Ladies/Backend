@@ -29,18 +29,17 @@ app.UseAuthorization();
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
 
-// Map Endpoints
-app.MapLoginEndpoint();
-app.MapUsersEndpoints();
+// Map the endpoints
+app.MapEndpoints();
 
 await app.ApplyMigrationsAsync();
 await app.SeedDataAsync();
 
 if (app.Environment.IsDevelopment())
 {
-    app.Run("http://0.0.0.0:5171");
+    app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
 }
 else
 {
-    app.Run();
+    app.Run(); // Use default settings in production
 }

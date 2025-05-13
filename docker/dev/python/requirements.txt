@@ -1,0 +1,7 @@
+transformers
+torch
+huggingface_hub
+hf_xet
+fastapi
+pydantic
+uvicorn
