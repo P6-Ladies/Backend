@@ -4,10 +4,13 @@ using Backend.Entities.Conversations;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Data;
 using Backend.Entities.Agents;
+using Backend.Entities.Agents.DTOs;
 using Backend.Entities.Scenarios;
+using Backend.Entities.Scenarios.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Backend.Entities.Messages;
 using Backend.Entities.Messages.DTOs;
+using Backend.Entities.Conversations;
 using Backend.Entities.Conversations.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Backend.Mappings;
@@ -85,7 +88,30 @@ public static class ConversationEndpoints
                 .Include(c => c.Agent)
                 .Include(c => c.Scenario)
                 .Include(c => c.Messages)
-                .FirstOrDefaultAsync(c => c.Id == conversationId);
+                .Where(c => c.Id == conversationId)
+                .Select(c => new ConversationDTO
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    CreatedAt = c.CreatedAt,
+                    Agent = new AgentDTO
+                    {
+                        Id = c.Agent.Id,
+                        Name = c.Agent.Name
+                    },
+                    Scenario = c.Scenario == null ? null : new ScenarioDTO
+                    {
+                        Id = c.Scenario.Id,
+                        Name = c.Scenario.Name
+                    },
+                    Messages = c.Messages.Select(m => new MessageDTO
+                    {
+                        Body = m.Body,
+                        UserSent = m.UserSent,
+                        ReceivedAt = m.ReceivedAt
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
 
             return convo is null
                 ? Results.NotFound("Conversation not found.")

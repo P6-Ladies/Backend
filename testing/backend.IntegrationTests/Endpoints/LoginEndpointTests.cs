@@ -23,11 +23,12 @@ public class LoginEndpointTests : IClassFixture<backendWebApplicationFactory>
     [Fact]
     public async Task Login_ShouldReturnToken_WhenCredentialsAreValid()
     {
-        var client = _factory.CreateClientWithSeed(new BaseCaseDb(), out var testUser);
+        var seeder = new BaseCaseDb();
+        var client = _factory.CreateClientWithSeed(seeder, out var user);
 
         var loginDto = new LoginDTO
         {
-            Email = testUser.Email,
+            Email = user.Email!,
             Password = "Password123!"
         };
 
@@ -35,8 +36,8 @@ public class LoginEndpointTests : IClassFixture<backendWebApplicationFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var json = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        Assert.True(json!.ContainsKey("Token"));
-        Assert.False(string.IsNullOrEmpty(json["Token"]));
+        Assert.True(json!.ContainsKey("Bearer"));
+        Assert.False(string.IsNullOrEmpty(json["Bearer"]));
     }
 
     [Fact]

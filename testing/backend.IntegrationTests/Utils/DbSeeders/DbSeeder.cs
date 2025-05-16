@@ -25,8 +25,7 @@ public abstract class DbSeeder
 
     public void SeedUsers(UserManager<User> userManager)
     {
-        var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
-        var email = $"testuser_{uniqueId}@email.com";
+        const string email = "testuser@email.com";
 
         var user = new User
         {
@@ -44,11 +43,9 @@ public abstract class DbSeeder
 
         Users["testuser"] = user;
 
-        var claim1 = new Claim(ClaimTypes.Name, user.UserName!);
-        var claim2 = new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString());
+        userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, user.UserName!)).GetAwaiter().GetResult();
+        userManager.AddClaimAsync(user, new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())).GetAwaiter().GetResult();
 
-        userManager.AddClaimAsync(user, claim1).GetAwaiter().GetResult();
-        userManager.AddClaimAsync(user, claim2).GetAwaiter().GetResult();
     }
 
     public void SeedAgent(PrototypeDbContext dbContext, User user)

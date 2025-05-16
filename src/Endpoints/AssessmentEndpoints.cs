@@ -81,6 +81,18 @@ namespace Backend.Endpoints
                 var assessments = await dbContext.Assessments
                     .Include(a => a.Conversation)
                     .Where(a => a.UserId == userId)
+                    .Select(a => new AssessmentDTO
+                    {
+                        Id = a.Id,
+                        Body = a.Body,
+                        ConflictManagementStrategy = a.ConflictManagementStrategy,
+                        Openness = a.Openness,
+                        Conscientiousness = a.Conscientiousness,
+                        Extroversion = a.Extroversion,
+                        Agreeableness = a.Agreeableness,
+                        Neuroticism = a.Neuroticism,
+                        ConversationId = a.Conversation.Id,
+                    })
                     .ToListAsync();
 
                 if (assessments.Count == 0)
@@ -100,8 +112,21 @@ namespace Backend.Endpoints
             app.MapGet("/assessments/{assessmentId}", async (int assessmentId, PrototypeDbContext dbContext) =>
             {
                 var assessment = await dbContext.Assessments
-                    .Include(a => a.Conversation)
-                    .FirstOrDefaultAsync(a => a.Id == assessmentId);
+                    .Where(a => a.Id == assessmentId)
+                    .Select(a => new AssessmentDTO
+                    {
+                        Id = a.Id,
+                        UserId = a.UserId,
+                        Body = a.Body,
+                        ConflictManagementStrategy = a.ConflictManagementStrategy,
+                        Openness = a.Openness,
+                        Conscientiousness = a.Conscientiousness,
+                        Extroversion = a.Extroversion,
+                        Agreeableness = a.Agreeableness,
+                        Neuroticism = a.Neuroticism,
+                        ConversationId = a.ConversationId
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (assessment == null)
                 {
@@ -113,7 +138,7 @@ namespace Backend.Endpoints
             .WithName("GetAssessmentById")
             .WithTags("Assessments")
             .WithDescription("Retrieves a specific assessment by its ID.")
-            .Produces<Assessment>(StatusCodes.Status200OK)
+            .Produces<AssessmentDTO>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
             // Update an existing assessment

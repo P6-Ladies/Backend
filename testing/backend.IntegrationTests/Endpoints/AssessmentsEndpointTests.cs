@@ -44,9 +44,12 @@ public class AssessmentEndpointTests : IClassFixture<backendWebApplicationFactor
         var response = await client.GetAsync($"/assessments/{assessmentId}");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var assessment = await response.Content.ReadFromJsonAsync<Assessment>();
-        Assert.Equal(assessmentId, assessment!.Id);
+
+        var assessment = await response.Content.ReadFromJsonAsync<AssessmentDTO>();
+        Assert.NotNull(assessment);
+        Assert.Equal(assessmentId, assessment.Id);
     }
+
 
     [Fact]
     public async Task DeleteAssessment_ShouldReturnNoContent_WhenAssessmentExists()

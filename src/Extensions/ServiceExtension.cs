@@ -165,7 +165,7 @@ namespace Backend.Extensions
             // Configure JSON serialization options
             services.AddControllers().AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
             return services;
         }
