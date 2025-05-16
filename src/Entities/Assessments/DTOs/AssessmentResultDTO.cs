@@ -1,4 +1,4 @@
-namespace backend.Entities.Assessments.DTOs;
+namespace Backend.Entities.Assessments.DTOs;
 public class AssessmentResultDTO
 {
     public string Body { get; set; }

@@ -1,4 +1,4 @@
-namespace backend.Entities.Scenarios.DTOs
+namespace Backend.Entities.Scenarios.DTOs
 {
     public class CreateScenarioDTO
     {

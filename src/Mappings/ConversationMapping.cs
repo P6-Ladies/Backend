@@ -1,9 +1,9 @@
 // src\Mappings\UserMapping.cs
-using backend.Endpoints;
-using backend.Entities.Conversations;
-using backend.Entities.Conversations.DTOs;
+using Backend.Endpoints;
+using Backend.Entities.Conversations;
+using Backend.Entities.Conversations.DTOs;
 
-namespace backend.Mappings;
+namespace Backend.Mappings;
 
 public static class ConversationMapping
 {
@@ -19,13 +19,23 @@ public static class ConversationMapping
         };
     }
 
-    public static CreateConversationDTO ToDTO(this Conversation conversation)
+    public static CreateConversationDTO ToCreateDTO(this Conversation conversation)
     {
         return new CreateConversationDTO{
             Title = conversation.Title,
             AgentId = conversation.AgentId,
             ScenarioId = conversation.ScenarioId,
             UserId = conversation.UserId
+        };
+    }
+
+    public static ShowConversationDTO ToShowDTO(this Conversation conversation)
+    {
+        return new ShowConversationDTO{
+            Title = conversation.Title,
+            Completed = conversation.Completed,
+            Id = conversation.Id,
+            CreatedAt = conversation.CreatedAt
         };
     }
 }

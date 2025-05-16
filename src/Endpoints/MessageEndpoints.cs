@@ -1,11 +1,11 @@
 // src\Endpoints\MessageEndpoints.cs
 
-using backend.Data;
-using backend.Entities.Messages;
-using backend.Entities.Conversations;
+using Backend.Data;
+using Backend.Entities.Messages;
+using Backend.Entities.Conversations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using backend.Entities.Messages.DTOs;
+using Backend.Entities.Messages.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Net.Http;
 using System.Text;
@@ -13,7 +13,7 @@ using System.Text.Json;
 using backend.Extensions;
 
 
-namespace backend.Endpoints
+namespace Backend.Endpoints
 {
     public static class MessageEndpoints
     {

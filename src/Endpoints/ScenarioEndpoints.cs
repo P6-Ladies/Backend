@@ -1,12 +1,12 @@
 // src\Endpoints\ScenarioEndpoints.cs
 
-using backend.Data;
-using backend.Entities.Scenarios;
-using backend.Entities.Scenarios.DTOs;
+using Backend.Data;
+using Backend.Entities.Scenarios;
+using Backend.Entities.Scenarios.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Endpoints
+namespace Backend.Endpoints
 {
     public static class ScenarioEndpoints
     {

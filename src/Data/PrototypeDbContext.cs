@@ -1,15 +1,15 @@
 // src\Data\PrototypeDbContext.cs
-using backend.Entities.Users;
-using backend.Entities.Agents;
-using backend.Entities.Assessments;
-using backend.Entities.Conversations;
-using backend.Entities.Messages;
-using backend.Entities.Scenarios;
+using Backend.Entities.Users;
+using Backend.Entities.Agents;
+using Backend.Entities.Assessments;
+using Backend.Entities.Conversations;
+using Backend.Entities.Messages;
+using Backend.Entities.Scenarios;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Data
+namespace Backend.Data
 {
     public class PrototypeDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
@@ -87,7 +87,7 @@ namespace backend.Data
                 // user_id, agent_id required
                 entity.Property(c => c.UserId).IsRequired();
                 entity.Property(c => c.AgentId).IsRequired();
-                entity.Property(c => c.ScenarioId).IsRequired();
+                entity.Property(c => c.ScenarioId).IsRequired(false);
                 entity.Property(c => c.Title).IsRequired();
                 // Relationship: Conversation -> User
                 entity.HasOne(c => c.User)

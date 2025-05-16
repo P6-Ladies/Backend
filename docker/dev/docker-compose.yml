@@ -81,8 +81,5 @@ services:
 
     volumes:
       - p6_db_data:/var/lib/postgresql/data
-    #networks:
-    #  - app-network
-
 volumes:
   p6_db_data:

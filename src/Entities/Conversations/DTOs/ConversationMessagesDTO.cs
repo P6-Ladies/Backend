@@ -1,8 +1,8 @@
 // src\Entities\Users\DTOs\CreateUserDTO.cs
 using System.ComponentModel.DataAnnotations;
-using backend.Entities.Messages.DTOs;
+using Backend.Entities.Messages.DTOs;
 
-namespace backend.Entities.Conversations.DTOs;
+namespace Backend.Entities.Conversations.DTOs;
 public record ConversationMessagesDTO
 {
     [Required]

@@ -1,18 +1,19 @@
 // src\Program.cs
 
-using backend.Data;
-using backend.Endpoints;
-using backend.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
+using System.Threading.Tasks;
+using Backend.Extensions;
 
+public partial class Program
+{
+    public static async Task Main(string[] args)
+        {
 
-var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateBuilder(args);
 
-// Configure Services
-builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
+        // Configure services using the extension methods
+        builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
 
-// Configure CORS
+        // Configure CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy =>
@@ -21,27 +22,27 @@ builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
                     .AllowAnyHeader());
         });
 
-var app = builder.Build();
+        var app = builder.Build();
 
-// Configure middleware
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseStaticFiles();
-app.UseCors("AllowFrontend");
+        // Configure middleware using extension methods
+        app.UseCors("AllowFrontend"); // Apply the CORS middleware here
 
-// Map the endpoints
-app.MapEndpoints();
+        // Configure middleware
+        app.ConfigureMiddleware();
 
-await app.ApplyMigrationsAsync();
-await app.SeedDataAsync();
+        // Map the endpoints
+        app.MapEndpoints();
 
-if (app.Environment.IsDevelopment())
-{
-    app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
-}
-else
-{
-    app.Run(); // Use default settings in production
+        await app.ApplyMigrationsAsync();
+        await app.SeedDataAsync();
+
+        if (app.Environment.IsDevelopment())
+        {
+            app.Run("http://0.0.0.0:5171"); // Run on a specific port for development
+        }
+        else
+        {
+            app.Run(); // Use default settings in production
+        }
+    }
 }

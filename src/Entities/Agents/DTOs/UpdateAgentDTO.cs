@@ -1,4 +1,4 @@
-namespace backend.Entities.Agents.DTOs
+namespace Backend.Entities.Agents.DTOs
 {
     public class UpdateAgentDTO
     {

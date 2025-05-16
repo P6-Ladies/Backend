@@ -1,9 +1,9 @@
 // src\Entities\Scenarios\Scenarios.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using backend.Entities.Users;
+using Backend.Entities.Users;
 
-namespace backend.Entities.Scenarios;
+namespace Backend.Entities.Scenarios;
 public class Scenario
 {
     [Key]

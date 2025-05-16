@@ -1,9 +1,9 @@
 // src\Mappings\UserMapping.cs
-using backend.Endpoints;
-using backend.Entities.Messages;
-using backend.Entities.Messages.DTOs;
+using Backend.Endpoints;
+using Backend.Entities.Messages;
+using Backend.Entities.Messages.DTOs;
 
-namespace backend.Mappings;
+namespace Backend.Mappings;
 
 public static class MessageMapping
 {
@@ -15,6 +15,7 @@ public static class MessageMapping
             Body = messageDTO.Message,
             ReceivedAt = DateTime.UtcNow,
             UserSent = true,
+            ConversationId = messageDTO.ConversationId
         };
     }
 

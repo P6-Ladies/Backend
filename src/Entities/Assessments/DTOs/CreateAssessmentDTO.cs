@@ -1,5 +1,6 @@
-namespace backend.Entities.Assessments.DTOs
+namespace Backend.Entities.Assessments.DTOs
 {
+    // DTO for creating a new assessment
     public class CreateAssessmentDTO
     {
         public int UserId { get; set; }

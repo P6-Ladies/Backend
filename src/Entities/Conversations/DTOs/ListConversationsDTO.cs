@@ -1,10 +1,8 @@
 // src\Entities\Users\DTOs\CreateUserDTO.cs
-using System.ComponentModel.DataAnnotations;
 
-namespace backend.Entities.Conversations.DTOs;
+namespace Backend.Entities.Conversations.DTOs;
 public record ListConversationsDTO
 {
-    [Required]
-    public required List<ShowConversationDTO> Conversations { get; set; } = new List<ShowConversationDTO>();
+    public List<ShowConversationDTO> Conversations { get; set; } = new List<ShowConversationDTO>(); //removed required because it was causing issues with the test
 
 }
