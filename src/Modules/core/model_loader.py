@@ -20,6 +20,11 @@ def load_all_models():
     model = AutoModelForCausalLM.from_pretrained(MODEL_DIR).to(device)
     logging.info(f"Model loaded on {device} in {time.time()-t0:0.1f}s")
 
+    load_assessment_models()
+    logging.info("Loading assessment models")
+
+def load_assessment_models():
+    global summarizer, personality_clf, zero_shot
     summarizer = pipeline("summarization", model=SUMMARIZER_MODEL)
     personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True)
     zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL)
