@@ -43,7 +43,6 @@ public class Conversation
 
     [ForeignKey(nameof(ScenarioId))]
     public Scenario? Scenario { get; set; }
-
     public ICollection<Assessment> Assessments { get; set; } = new List<Assessment>();
 
 }

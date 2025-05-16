@@ -18,7 +18,7 @@ def download_model(model_name: str, target_dir: str):
     os.makedirs(target_dir, exist_ok=True)
 
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(model_name,  use_auth_token="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")
         model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.bfloat16, use_auth_token="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").to(device)
 
         tokenizer.save_pretrained(target_dir)

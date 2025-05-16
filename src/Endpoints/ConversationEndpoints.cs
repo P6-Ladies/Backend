@@ -10,7 +10,6 @@ using Backend.Entities.Scenarios.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Backend.Entities.Messages;
 using Backend.Entities.Messages.DTOs;
-using Backend.Entities.Conversations;
 using Backend.Entities.Conversations.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Backend.Mappings;
@@ -26,16 +25,16 @@ public static class ConversationEndpoints
         var group = app.MapGroup("conversations");
 
         // Create a new conversation
-        group.MapPost("/", async ([FromBody] CreateConversationDTO request, PrototypeDbContext db) =>
+        group.MapPost("/", async ([FromBody] CreateConversationDTO request, PrototypeDbContext dbContext) =>
         {
             if (string.IsNullOrWhiteSpace(request.Title))
                 return Results.BadRequest("Title is required.");
 
-            var agent = await db.Agents.FindAsync(request.AgentId);
+            var agent = await dbContext.Agents.FindAsync(request.AgentId);
             if (agent is null)
                 return Results.NotFound("Agent not found.");
 
-            var scenario = await db.Scenarios.FindAsync(request.ScenarioId);
+            var scenario = await dbContext.Scenarios.FindAsync(request.ScenarioId);
             if (scenario is null)
                 return Results.NotFound("Scenario not found.");
 
@@ -96,7 +95,6 @@ public static class ConversationEndpoints
             var convo = await db.Conversations
                 .Include(c => c.Agent)
                 .Include(c => c.Scenario)
-                .Include(c => c.Messages)
                 .Where(c => c.Id == conversationId)
                 .Select(c => new ConversationDTO
                 {
@@ -113,12 +111,6 @@ public static class ConversationEndpoints
                         Id = c.Scenario.Id,
                         Name = c.Scenario.Name
                     },
-                    Messages = c.Messages.Select(m => new MessageDTO
-                    {
-                        Body = m.Body,
-                        UserSent = m.UserSent,
-                        ReceivedAt = m.ReceivedAt
-                    }).ToList()
                 })
                 .FirstOrDefaultAsync();
 

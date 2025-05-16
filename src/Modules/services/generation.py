@@ -1,10 +1,11 @@
 # path: src/Modules/api/endpoints.py
 
+from Modules.models.schemas import AgentPayload, ScenarioPayload, GenerateRequest, TemplateMessage
 import time, logging, torch
-from src.Modules.core.model_loader import tokenizer, model
+from Modules.core.model_loader import store
 
-def generate_text_response(request):
-    if not request.prompt:
+def generate_text_response(request: GenerateRequest):
+    if not request.Prompt:
         return {"error": "Prompt cannot be empty."}
     
     # ---- build system + agent prompts --------------------------------
@@ -45,26 +46,26 @@ def generate_text_response(request):
 
     # ---- create input tensors with graceful fallback ------------------
         # template really exists → safe to call
-    prompt_text = tokenizer.apply_chat_template(
+    prompt_text = store.tokenizer.apply_chat_template(
         messages,
         tokenize=False,
         add_generation_prompt=True,
     )
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    inputs = tokenizer(prompt_text, return_tensors="pt").to(device)
+    inputs = store.tokenizer(prompt_text, return_tensors="pt").to(device)
     input_ids      = inputs["input_ids"]
     attention_mask = inputs["attention_mask"] #Correctly indicates which tokens to be ignored, ones that are added through padding
 
     with torch.no_grad():
-        output_ids = model.generate(
+        output_ids = store.model.generate(
             input_ids=input_ids,
             attention_mask = attention_mask,
-            max_length=request.max_length,
+            max_length=request.MaxLength,
             do_sample=True, #Probabilistic instead of deterministic.
             top_p=0.9, #Cumulative probability of tokens to consider. 1 Would be just pick until you reach top_k. Increase for more wacky randomness.
             top_k=50, #Max amount of tokens to consider. Increase if you want more wacky randomness
-            eos_token_id=tokenizer.eos_token_id, #To indicate correctly that a sentence is over. Does not matter for llama.
+            eos_token_id=store.tokenizer.eos_token_id, #To indicate correctly that a sentence is over. Does not matter for llama.
         )
 
     # number of tokens in input prompt
@@ -74,5 +75,5 @@ def generate_text_response(request):
     generated_tokens = output_ids[0][input_length:]
 
     # decode yay
-    Agent_reply = tokenizer.decode(generated_tokens, skip_special_tokens=True)
+    Agent_reply = store.tokenizer.decode(generated_tokens, skip_special_tokens=True)
     return {"result": Agent_reply}

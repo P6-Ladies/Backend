@@ -1,7 +1,7 @@
-using backend.Entities.Agents;
-using backend.Entities.Scenarios;
+using Backend.Entities.Agents;
+using Backend.Entities.Scenarios;
 
-namespace backend.Entities.Messages;
+namespace Backend.Entities.Messages;
 
 public class RequestBody {
     public Agent Agent;

@@ -2,20 +2,20 @@
 
 import time, logging
 from typing import List, Dict
-from src.Modules.core.model_loader import summarizer, personality_clf, zero_shot
+from Modules.core.model_loader import store
 from Modules.models.schemas import Assessment
 
 def assess_conversation(request):
     conversation = request.conversation
 
-    summary = summarizer(conversation, max_length=150, min_length=40)[0]["summary_text"]
+    summary = store.summarizer(conversation, max_length=150, min_length=40)[0]["summary_text"]
 
-    raw_scores: List[Dict] = personality_clf(conversation)
+    raw_scores: List[Dict] = store.personality_clf(conversation)
     bm = {d["label"]: d["score"] for d in raw_scores}
     scaled = {k: int(round(v * 9 + 1)) for k, v in bm.items()}
 
     cms_labels = ["Collaboration","Competition","Avoidance","Accommodation","Compromise"]
-    zs = zero_shot(conversation, candidate_labels=cms_labels)
+    zs = store.zero_shot(conversation, candidate_labels=cms_labels)
     cms = zs["labels"][0]
 
     return Assessment(
