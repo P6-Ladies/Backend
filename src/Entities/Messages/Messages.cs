@@ -1,9 +1,9 @@
 // src\Entities\Messages\Messages.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Backend.Entities.Conversations;
+using backend.Entities.Conversations;
 
-namespace Backend.Entities.Messages;
+namespace backend.Entities.Messages;
 public class Message
 {
     [Key]

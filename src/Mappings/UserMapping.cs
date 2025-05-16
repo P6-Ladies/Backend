@@ -1,8 +1,8 @@
 // src\Mappings\UserMapping.cs
-using Backend.Entities.Users;
-using Backend.Entities.Users.DTOs;
+using backend.Entities.Users;
+using backend.Entities.Users.DTOs;
 
-namespace Backend.Mappings;
+namespace backend.Mappings;
 
 public static class UserMapping
 {

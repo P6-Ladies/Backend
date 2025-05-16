@@ -1,8 +1,8 @@
 // src\Program.cs
 
-using Backend.Data;
-using Backend.Endpoints;
-using Backend.Extensions;
+using backend.Data;
+using backend.Endpoints;
+using backend.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.FileProviders;
 
@@ -10,14 +10,16 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Services
-builder.Services.ConfigureDatabase(builder.Configuration, builder.Environment)
-    .ConfigureIdentity()
-    .ConfigureJwt(builder.Configuration)
-    .ConfigureAuthorizationPolicies()
-    .ConfigureSwagger()
-    .ConfigureEmailServices(builder.Configuration, builder.Environment)
-    .ConfigureUserIdentity()
-    .ConfigureCors();
+builder.Services.ConfigureServices(builder.Configuration, builder.Environment);
+
+// Configure CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend", policy =>
+                policy.WithOrigins("http://localhost:3000") // Adjust to match frontend URL
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+        });
 
 var app = builder.Build();
 

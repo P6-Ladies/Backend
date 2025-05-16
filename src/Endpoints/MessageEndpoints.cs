@@ -127,14 +127,7 @@ namespace backend.Endpoints
                         return Results.Problem("Failed to generate a valid response.");
                     }
 
-                    // Store the user message and agent response in the database
-                    var userMessage = new Message
-                    {
-                        ConversationId = conversationId,
-                        Body = request.Message,
-                        UserSent = true,
-                        ReceivedAt = DateTime.UtcNow
-                    };
+                    // Store the agent response in the database
                     var agentResponse = new Message
                     {
                         ConversationId = conversationId,
@@ -165,7 +158,6 @@ namespace backend.Endpoints
             app.MapGet("/conversations/{conversationId}/messages", async (int conversationId, PrototypeDbContext dbContext) =>
             {
                 var conversation = await dbContext.Conversations
-                    .Include(c => c.Messages)
                     .FirstOrDefaultAsync(c => c.Id == conversationId);
 
                 if (conversation == null)

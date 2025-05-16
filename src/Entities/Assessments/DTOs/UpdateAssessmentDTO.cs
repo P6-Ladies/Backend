@@ -1,5 +1,5 @@
 
-namespace Backend.Entities.Assessments.DTOs;
+namespace backend.Entities.Assessments.DTOs;
 // DTO for updating an assessment
 public class UpdateAssessmentDTO
 {

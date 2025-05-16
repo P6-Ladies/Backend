@@ -1,9 +1,9 @@
 // src\Entities\Agents\Agents.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Backend.Entities.Users;
+using backend.Entities.Users;
 
-namespace Backend.Entities.Agents;
+namespace backend.Entities.Agents;
 public class Agent
 {
     [Key]

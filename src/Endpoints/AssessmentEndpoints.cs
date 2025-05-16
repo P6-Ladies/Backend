@@ -2,7 +2,7 @@
 
 using backend.Data;
 using backend.Entities.Assessments;
-using backend.Entities.Assessments.DOTs;
+using backend.Entities.Assessments.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

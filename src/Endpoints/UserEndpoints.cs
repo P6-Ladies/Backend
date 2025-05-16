@@ -1,13 +1,13 @@
 // src\Endpoints\UserEndpoints.cs
 
-using Backend.Entities.Users;
-using Backend.Entities.Users.DTOs;
-using Backend.Mappings;
+using backend.Entities.Users;
+using backend.Entities.Users.DTOs;
+using backend.Mappings;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Backend.Endpoints;
+namespace backend.Endpoints;
 
 public static class UsersEndpoints
 {

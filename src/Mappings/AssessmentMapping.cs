@@ -1,7 +1,7 @@
-using Backend.Entities.Assessments;
-using Backend.Entities.Assessments.DTOs;
+using backend.Entities.Assessments;
+using backend.Entities.Assessments.DTOs;
 
-namespace Backend.Mappings;
+namespace backend.Mappings;
 
 public static class AssessmentMappings
 {

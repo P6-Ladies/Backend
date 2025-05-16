@@ -55,7 +55,7 @@ public static class ConversationEndpoints
 
             // Add initial messages from scenario.
             var initialUserMessage = new Message{Body = scenario.InitialUserMessage, UserSent = true, ConversationId = conversation.Id};
-            var initialAgentMessage = new Message{Body = scenario.InitialAgentMessage, UserSent = false, ConversationId = conversation.Id};
+            var initialAgentMessage = new Message{Body = scenario.InitialAgentMessage, UserSent = false, ConversationId = conversation.Id, ReceivedAt = DateTime.UtcNow.AddMilliseconds(50)};
 
             dbContext.Messages.Add(initialUserMessage);
             dbContext.Messages.Add(initialAgentMessage);
@@ -85,11 +85,7 @@ public static class ConversationEndpoints
                 })
                 .ToListAsync();
 
-            if (conversations.Count == 0)
-            {
-                return Results.NotFound("No conversations found for this user.");
-            }
-
+            //Return conversations. If empty, OK.
             return Results.Ok(conversations);
         })
         .WithName("GetUserConversations")

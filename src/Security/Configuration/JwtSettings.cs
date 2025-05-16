@@ -1,5 +1,5 @@
 // src\Security\Configuration\JwtSettings.cs
-namespace Backend.Security.Configuration
+namespace backend.Security.Configuration
 
 {
     public class JwtSettings

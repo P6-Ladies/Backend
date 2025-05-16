@@ -1,15 +1,15 @@
 // src\Extensions\ApplicationBuilder.cs
-using Backend.Data;
-using Backend.Entities.Agents;
-using Backend.Entities.Assessments;
-using Backend.Entities.Conversations;
-using Backend.Entities.Messages;
-using Backend.Entities.Scenarios;
-using Backend.Entities.Users;
+using backend.Data;
+using backend.Entities.Agents;
+using backend.Entities.Assessments;
+using backend.Entities.Conversations;
+using backend.Entities.Messages;
+using backend.Entities.Scenarios;
+using backend.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Extensions
+namespace backend.Extensions
 {
     public static class ApplicationBuilder
     {

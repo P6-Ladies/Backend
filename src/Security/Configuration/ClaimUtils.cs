@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 
-namespace Backend.Security.Configuration;
+namespace backend.Security.Configuration;
 
 public static class ClaimUtils
 {

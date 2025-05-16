@@ -1,12 +1,12 @@
 // src\Entities\Users\User.cs
-using Backend.Entities.Agents;
-using Backend.Entities.Assessments;
-using Backend.Entities.Conversations;
-using Backend.Entities.Scenarios;
+using backend.Entities.Agents;
+using backend.Entities.Assessments;
+using backend.Entities.Conversations;
+using backend.Entities.Scenarios;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace Backend.Entities.Users;
+namespace backend.Entities.Users;
 public class User : IdentityUser<int>
 {
     [StringLength(256)]

@@ -1,4 +1,4 @@
-namespace Backend.Entities.Assessments.DTOs
+namespace backend.Entities.Assessments.DTOs
 {
     public class AssessmentDTO
     {

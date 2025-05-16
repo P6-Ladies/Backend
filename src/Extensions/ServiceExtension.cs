@@ -1,8 +1,9 @@
 // src\Extensions\ServiceExtension.cs
-using Backend.Security.Configuration;
-using Backend.Data;
-using Backend.Entities.Users;
-using Backend.Security.Authorization;
+
+using backend.Security.Configuration;
+using backend.Data;
+using backend.Entities.Users;
+using backend.Security.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Backend.Endpoints;
+using System.Text.Json.Serialization;
+using backend.Endpoints;
 
-namespace Backend.Extensions
+namespace backend.Extensions
 {
     public static class ServiceExtensions
     {
@@ -135,17 +137,36 @@ namespace Backend.Extensions
 
             return services;
         }
-
-        public static IServiceCollection ConfigureCors(this IServiceCollection services)
+    
+        /// <summary>
+        /// Configures all necessary services including database, identity, JWT, authorization, and Swagger.
+        /// </summary>
+        public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
         {
-            services.AddCors(options =>
+            services.ConfigureDatabase(configuration, env)
+                    .ConfigureIdentity()
+                    .ConfigureJwt(configuration)
+                    .ConfigureAuthorizationPolicies()
+                    .ConfigureSwagger();
+
+            // Configuring Identity options for allowed characters in usernames
+            services.Configure<IdentityOptions>(options =>
             {
-                options.AddPolicy("AllowFrontend",
-                    policy => policy.WithOrigins("http://localhost:3000") // Allow frontend
-                                    .AllowAnyMethod()
-                                    .AllowAnyHeader());
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             });
 
+            // Configure external HTTP client (example: for Hugging Face API)
+            services.AddHttpClient("HF", client =>
+            {
+                client.BaseAddress = new Uri("http://huggingface:5000");
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            });
+
+            // Configure JSON serialization options
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+            });
             return services;
         }
 

@@ -1,10 +1,10 @@
 ﻿// src\Security\Authorization\OwnDataRequirement.cs
 
-using Backend.Entities.Users;
+using backend.Entities.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
-namespace Backend.Security.Authorization;
+namespace backend.Security.Authorization;
 
 public class OwnDataRequirement : IAuthorizationRequirement;
 

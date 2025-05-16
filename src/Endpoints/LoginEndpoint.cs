@@ -1,7 +1,7 @@
 // src\Endpoints\LoginEndpoint.cs
-using Backend.Security.Configuration;
-using Backend.Entities.Users;
-using Backend.Entities.Users.DTOs;
+using backend.Security.Configuration;
+using backend.Entities.Users;
+using backend.Entities.Users.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -9,7 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Backend.Endpoints
+namespace backend.Endpoints
 {
     public static class LoginEndpoint
     {
