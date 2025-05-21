@@ -8,6 +8,7 @@ using Backend.Entities.Users.DTOs;
 using Backend.Entities.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
+using System.Text.Json;
 
 namespace Backend.IntegrationTests.Endpoints;
 
@@ -35,9 +36,11 @@ public class LoginEndpointTests : IClassFixture<backendWebApplicationFactory>
         var response = await client.PostAsJsonAsync("/login", loginDto);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var json = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-        Assert.True(json!.ContainsKey("Bearer"));
-        Assert.False(string.IsNullOrEmpty(json["Bearer"]));
+        var raw = await response.Content.ReadAsStringAsync();
+
+        var json = JsonSerializer.Deserialize<Dictionary<string, string>>(raw);
+        Assert.True(json!.ContainsKey("token"));
+        Assert.False(string.IsNullOrEmpty(json["token"]));
     }
 
     [Fact]

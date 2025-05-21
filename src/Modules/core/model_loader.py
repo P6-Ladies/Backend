@@ -26,6 +26,7 @@ def load_all_models():
     store.model = AutoModelForCausalLM.from_pretrained(MODEL_DIR, torch_dtype=torch.bfloat16).to(device)
     logging.info(f"Model loaded on {device} in {time.time()-t0:0.1f}s")
 
+<<<<<<< HEAD
     if store.tokenizer is None or store.model is None:
         raise logging.info("Model or tokenizer failed to load!")
 
@@ -33,3 +34,13 @@ def load_all_models():
     store.personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, top_k=None, token = "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")
     store.zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL)
     return store
+=======
+    load_assessment_models()
+    logging.info("Loading assessment models")
+
+def load_assessment_models():
+    global summarizer, personality_clf, zero_shot
+    summarizer = pipeline("summarization", model=SUMMARIZER_MODEL)
+    personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True)
+    zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL)
+>>>>>>> origin/Testing-full-with-python

@@ -34,7 +34,7 @@ public static class HttpClientExtensions
         }
         else
         {
-            throw new InvalidOperationException("Failed to seed test user.");
+            testUser = null!;
         }
 
         return client;

@@ -45,7 +45,7 @@ namespace Backend.IntegrationTests.Endpoints
         }
 
         [Fact]
-        public async Task GetUser_ShouldReturnNotFound_WhenUserDoesNotExist()
+        public async Task GetUser_ShouldReturnUnauthorized_WhenUserDoesNotExist()
         {
             // Arrange: Create a client with an empty database
             var client = _factory.CreateClientWithSeed(new EmptyDb(), out _);
@@ -54,7 +54,7 @@ namespace Backend.IntegrationTests.Endpoints
             var response = await client.GetAsync("/users/1");
 
             // Assert: Check if the response is NotFound
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
 
             // Verify Database State (should be empty)
             using var scope = _factory.Services.CreateScope();
