@@ -1,3 +1,4 @@
+# testing\backend.IntegrationTests\python\test_generate.py
 def test_generate_text_valid(client):
     payload = {
         "prompt": "Once upon a time",

@@ -2,12 +2,9 @@
 
 using Backend.Data;
 using Backend.Entities.Messages;
-using Backend.Entities.Conversations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Backend.Entities.Messages.DTOs;
-using Microsoft.Extensions.Logging;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
