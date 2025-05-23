@@ -4,15 +4,14 @@ import time, logging, torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from Modules.core.config import MODEL_DIR, SUMMARIZER_MODEL, PERSONALITY_MODEL, MNLI_MODEL
 
-
-class ModelStore:
-    tokenizer = None
-    model = None
-    summarizer = None
-    personality_clf = None
+class Store:
+    tokenizer = None,
+    model = None,
+    summarizer = None,
+    personality_clf = None,
     zero_shot = None
 
-store = ModelStore()
+store = Store()
 
 def load_all_models():
     global store
@@ -26,21 +25,10 @@ def load_all_models():
     store.model = AutoModelForCausalLM.from_pretrained(MODEL_DIR, torch_dtype=torch.bfloat16).to(device)
     logging.info(f"Model loaded on {device} in {time.time()-t0:0.1f}s")
 
-<<<<<<< HEAD
-    if store.tokenizer is None or store.model is None:
-        raise logging.info("Model or tokenizer failed to load!")
-
-    store.summarizer = pipeline("summarization", model=SUMMARIZER_MODEL)
-    store.personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, top_k=None, token = "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")
-    store.zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL)
-    return store
-=======
     load_assessment_models()
     logging.info("Loading assessment models")
 
 def load_assessment_models():
-    global summarizer, personality_clf, zero_shot
-    summarizer = pipeline("summarization", model=SUMMARIZER_MODEL)
-    personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True)
-    zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL)
->>>>>>> origin/Testing-full-with-python
+    store.summarizer = pipeline("summarization", model=SUMMARIZER_MODEL, torch_dtype=torch.bfloat16)
+    store.personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True, torch_dtype=torch.bfloat16, token = "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")
+    store.zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL, torch_dtype=torch.bfloat16)
