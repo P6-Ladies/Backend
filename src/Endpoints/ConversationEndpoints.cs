@@ -14,6 +14,7 @@ using Backend.Entities.Conversations;
 using Backend.Entities.Conversations.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Backend.Mappings;
+using Backend.Entities.Assessments.DTOs;
 
 
 namespace Backend.Endpoints;
@@ -124,7 +125,7 @@ public static class ConversationEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         // Mark conversation as completed
-        app.MapPut("/conversations/{conversationId}/complete", async (int conversationId, PrototypeDbContext db) =>
+        app.MapPut("/conversations/{conversationId}/complete", async (int conversationId, [FromServices] IHttpClientFactory http, [FromServices] PrototypeDbContext db) =>
         {
             var convo = await db.Conversations.FindAsync(conversationId);
             if (convo is null)
@@ -132,8 +133,26 @@ public static class ConversationEndpoints
 
             convo.Completed = true;
             await db.SaveChangesAsync();
+            // Trigger the assessment process
+            var client = http.CreateClient("Internal");
 
-            return Results.Ok("Marked as completed.");
+            var assessmentRequest = new CreateAssessmentDTO
+            {
+                ConversationId = conversationId,
+                UserId = convo.UserId
+            };
+
+            var response = await client.PostAsJsonAsync("/assessments", assessmentRequest);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                return Results.Problem(
+                    detail: $"Failed to trigger assessment: {err}",
+                    statusCode: (int)response.StatusCode);
+            }
+
+            return Results.Ok("Marked as completed and assessment triggered.");
         })
         .WithName("CompleteConversation")
         .WithTags("Conversations")
@@ -157,68 +176,6 @@ public static class ConversationEndpoints
         .WithTags("Conversations")
         .WithDescription("Deletes a specific conversation.");
 
-/*        group.MapGet("/{userId}", (int userId, PrototypeDbContext dBContext) =>
-        {
-
-            try
-            {
-                List<Conversation> conversations = dBContext.Conversations.FromSqlRaw("SELECT * FROM conversations WHERE \"UserId\" = {0}", userId).ToList();
-                List<ShowConversationDTO> dtoConversations = new List<ShowConversationDTO>();
-                foreach (Conversation conversation in conversations)
-                {
-                    dtoConversations.Add(conversation.ToShowDTO());
-                }
-                ListConversationsDTO listConversationsDto = new ListConversationsDTO { Conversations = dtoConversations };
-                return Results.Ok(listConversationsDto);
-            }
-            catch (Exception ex)
-            {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
-
-        })
-        .WithName("ShowConversations")
-        .WithTags("Conversations")
-        .WithDescription("Shows all conversations for specified user.")
-        .Produces<ShowConversationDTO>(StatusCodes.Status201Created)
-        .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
-
-        group.MapDelete("/{conversationId}", async (int id, PrototypeDbContext db) =>
-        {
-            var convo = await db.Conversations.FindAsync(id);
-            if (convo is null)
-                return Results.NotFound("Conversation not found.");
-
-            db.Conversations.Remove(convo);
-            await db.SaveChangesAsync();
-
-            return Results.NoContent();
-        })
-        .WithName("DeleteConversation")
-        .WithTags("Conversations")
-        .WithDescription("Deletes conversation with specified ID.")
-        .Produces(StatusCodes.Status204NoContent)
-        .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
-
-        //THIS SHOULD ALSO START THE ANALYSIS PROCESS
-        group.MapGet("/setComplete/{conversationId}", async (int conversationId, PrototypeDbContext dBContext) =>
-        {
-            try {
-                var conversation = dBContext.Conversations.Single(c => c.Id == conversationId);
-                conversation.Completed = true;
-                await dBContext.SaveChangesAsync();
-                return  Results.Ok("Successfully set completed");
-            } catch (Exception ex) {
-                return Results.Problem(ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
-            
-        })
-        .WithName("SetCompleted")
-        .WithTags("Conversations")
-        .WithDescription("Sets completed to true for the given conversation.")
-        .Produces(StatusCodes.Status200OK)
-        .Produces<IEnumerable<IdentityError>>(StatusCodes.Status400BadRequest);
-*/
     return group;
     }
 }
