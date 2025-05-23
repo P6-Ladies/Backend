@@ -155,12 +155,18 @@ namespace Backend.Extensions
                 options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
             });
 
-            // Configure external HTTP client (example: for Hugging Face API)
+            // Configure external HTTP client for the huggingface docker container
             services.AddHttpClient("HF", client =>
             {
                 client.BaseAddress = new Uri("http://huggingface:5000");
                 client.Timeout = Timeout.InfiniteTimeSpan;
             });
+
+            services.AddHttpClient("Internal", client =>
+            {
+                client.BaseAddress = new Uri("http://localhost:80/");
+            });
+
 
             // Configure JSON serialization options
             services.AddControllers().AddJsonOptions(options =>

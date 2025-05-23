@@ -30,13 +30,13 @@ class GenerateRequest(BaseModel):
     MaxLength: Optional[int] = 8192
 
 class AssessRequest(BaseModel):
-    Conversation: str
+    conversation: str
 
 class Assessment(BaseModel):
-    Body: str
-    Conflict_management_strategy: str
-    Openness: int
-    Conscientiousness: int
-    Extroversion: int
-    Agreeableness: int
-    Neuroticism: int
+    body: str
+    conflict_management_strategy: str
+    openness: int
+    conscientiousness: int
+    extroversion: int
+    agreeableness: int
+    neuroticism: int

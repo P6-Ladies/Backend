@@ -34,7 +34,7 @@ namespace Backend.Endpoints
 
                 // 3. Call the python /assess endpoint
                 var client = http.CreateClient("HF");
-                var response = await client.PostAsJsonAsync("/assess", new { conversation = convoText });
+                var response = await client.PostAsJsonAsync("assess", new { conversation = convoText });
 
                 if (!response.IsSuccessStatusCode)
                 {

@@ -100,7 +100,7 @@ namespace Backend.Endpoints
 
                     var jsonBody = JsonSerializer.Serialize(requestBody);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
+                    // HF means that it tries to access the docker container named huggingface
                     var client = httpClientFactory.CreateClient("HF");
 
                     // Send request to the Python microservice to generate the response

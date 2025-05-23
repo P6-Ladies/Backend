@@ -3,19 +3,24 @@
 import time, logging
 from typing import List, Dict
 from Modules.core.model_loader import store
-from Modules.models.schemas import Assessment
+from Modules.models.schemas import Assessment, AssessRequest
 
-def assess_conversation(request):
+def assess_conversation(request: AssessRequest):
     conversation = request.conversation
+    short_conversation = truncate_conversation(conversation, store.zero_shot.tokenizer, 480)
+    logging.info(short_conversation)
 
-    summary = store.summarizer(conversation, max_length=150, min_length=40)[0]["summary_text"]
+    summary = store.summarizer(short_conversation, max_length=150, min_length=40)[0]["summary_text"]
 
-    raw_scores: List[Dict] = store.personality_clf(conversation)
-    bm = {d["label"]: d["score"] for d in raw_scores}
+    raw_scores: List[Dict] = store.personality_clf(short_conversation)
+    logging.info(f"Personality scores raw: {raw_scores}")
+    bm = {d["label"]: d["score"] for d in raw_scores[0]}
+    logging.info(f"Extracted labels: {list(bm.keys())}")
     scaled = {k: int(round(v * 9 + 1)) for k, v in bm.items()}
 
     cms_labels = ["Collaboration","Competition","Avoidance","Accommodation","Compromise"]
-    zs = store.zero_shot(conversation, candidate_labels=cms_labels)
+    zs = store.zero_shot(short_conversation, candidate_labels=cms_labels)
+    logging.info(f"Zero-shot result: {zs}")
     cms = zs["labels"][0]
 
     return Assessment(
@@ -27,3 +32,11 @@ def assess_conversation(request):
         agreeableness=scaled.get("Agreeableness", 5),
         neuroticism=scaled.get("Neuroticism", 5),
     )
+
+#Removes characters from start so that it fits with 512 tokens.
+def truncate_conversation(conversation: str, tokenizer, max_tokens: int = 480) -> str:
+    encoded = tokenizer.encode(conversation, add_special_tokens=False)
+    if len(encoded) > max_tokens:
+        encoded = encoded[-max_tokens:]
+    truncated = tokenizer.decode(encoded, skip_special_tokens=True)
+    return truncated

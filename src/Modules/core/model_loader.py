@@ -29,6 +29,7 @@ def load_all_models():
     logging.info("Loading assessment models")
 
 def load_assessment_models():
-    store.summarizer = pipeline("summarization", model=SUMMARIZER_MODEL, torch_dtype=torch.bfloat16)
-    store.personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True, torch_dtype=torch.bfloat16, token = "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")
-    store.zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL, torch_dtype=torch.bfloat16)
+    #store.summarizer = pipeline("summarization", model=SUMMARIZER_MODEL, torch_dtype=torch.bfloat16)
+    #store.personality_clf = pipeline("text-classification", model=PERSONALITY_MODEL, return_all_scores=True, torch_dtype=torch.bfloat16, token = "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")
+    #store.zero_shot = pipeline("zero-shot-classification", model=MNLI_MODEL, torch_dtype=torch.bfloat16)
+    return

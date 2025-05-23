@@ -14,6 +14,9 @@ using Backend.Entities.Conversations.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Backend.Mappings;
 using Backend.Entities.Assessments.DTOs;
+using Backend.Entities.Assessments;
+using System.Text;
+using System.Text.Json;
 
 
 namespace Backend.Endpoints;
@@ -102,6 +105,7 @@ public static class ConversationEndpoints
                     Id = c.Id,
                     Title = c.Title,
                     CreatedAt = c.CreatedAt,
+                    Completed = c.Completed,
                     Agent = new AgentDTO
                     {
                         Id = c.Agent.Id,
@@ -126,24 +130,61 @@ public static class ConversationEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         // Mark conversation as completed
-        app.MapPut("/conversations/{conversationId}/complete", async (int conversationId, [FromServices] IHttpClientFactory http, [FromServices] PrototypeDbContext db) =>
+        app.MapPut("/conversations/{conversationId}/complete", async (int conversationId, [FromServices] IHttpClientFactory httpClientFactory, [FromServices] PrototypeDbContext dbContext) =>
         {
-            var convo = await db.Conversations.FindAsync(conversationId);
+            var convo = await dbContext.Conversations.FindAsync(conversationId);
             if (convo is null)
                 return Results.NotFound("Conversation not found.");
 
             convo.Completed = true;
-            await db.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
             // Trigger the assessment process
-            var client = http.CreateClient("Internal");
+            var messages = await dbContext.Messages.Where(m => m.ConversationId == conversationId).ToListAsync();
+        
+            // 2. Build the raw text payload
+            var convoText = string.Join("\n",
+                messages
+                        .OrderBy(m => m.ReceivedAt)
+                        .Select(m => $"{(m.UserSent ? "User" : "Agent")}: {m.Body}")
+            );
 
-            var assessmentRequest = new CreateAssessmentDTO
+            System.Diagnostics.Debug.WriteLine(convoText);
+
+            // 3. Call the python /assess endpoint
+            var client = httpClientFactory.CreateClient("HF");
+
+            var response = await client.PostAsJsonAsync("assess", new {conversation = convoText});
+
+            if (!response.IsSuccessStatusCode)
             {
-                ConversationId = conversationId,
-                UserId = convo.UserId
+                var err = await response.Content.ReadAsStringAsync();
+                return Results.Problem(
+                    detail: $"Assessment service error: {err}",
+                    statusCode: (int)response.StatusCode);
+            }
+
+            // 4. Deserialize into our AssessmentDTO
+            var dto = await response.Content.ReadFromJsonAsync<AssessmentResultDTO>();
+            if (dto is null)
+                return Results.Problem("Invalid response from assessment service.");
+
+            // 5. Map & persist
+            var assessment = new Assessment
+            {
+                UserId                        = convo.UserId,
+                ConversationId                = conversationId,
+                Body                          = dto.Body,
+                ConflictManagementStrategy    = dto.ConflictManagementStrategy,
+                Openness                      = dto.Openness,
+                Conscientiousness             = dto.Conscientiousness,
+                Extroversion                  = dto.Extroversion,
+                Agreeableness                 = dto.Agreeableness,
+                Neuroticism                   = dto.Neuroticism
             };
 
-            var response = await client.PostAsJsonAsync("/assessments", assessmentRequest);
+            dbContext.Assessments.Add(assessment);
+            await dbContext.SaveChangesAsync();
+            
 
             if (!response.IsSuccessStatusCode)
             {
@@ -153,7 +194,7 @@ public static class ConversationEndpoints
                     statusCode: (int)response.StatusCode);
             }
 
-            return Results.Ok("Marked as completed and assessment triggered.");
+            return Results.Ok("Marked as completed and assessed.");
         })
         .WithName("CompleteConversation")
         .WithTags("Conversations")
