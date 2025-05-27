@@ -18,22 +18,23 @@ namespace Backend.Endpoints
             {
                 // 1. Verify conversation exists
                 var conversation = await dbContext.Conversations
-                    .Include(c => c.Messages)
                     .FirstOrDefaultAsync(c => c.Id == request.ConversationId);
 
                 if (conversation is null)
                     return Results.NotFound("Conversation not found.");
 
+                var messages = await dbContext.Messages.Where(m => m.ConversationId == request.ConversationId).ToListAsync();
+
                 // 2. Build the raw text payload
                 var convoText = string.Join("\n",
-                    conversation.Messages
-                                .OrderBy(m => m.ReceivedAt)
-                                .Select(m => $"{(m.UserSent ? "User" : "Agent")}: {m.Body}")
+                    messages
+                            .OrderBy(m => m.ReceivedAt)
+                            .Select(m => $"{(m.UserSent ? "User" : "Agent")}: {m.Body}")
                 );
 
                 // 3. Call the python /assess endpoint
                 var client = http.CreateClient("HF");
-                var response = await client.PostAsJsonAsync("/assess", new { conversation = convoText });
+                var response = await client.PostAsJsonAsync("assess", new { conversation = convoText });
 
                 if (!response.IsSuccessStatusCode)
                 {

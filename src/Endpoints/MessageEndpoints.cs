@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Entities.Messages.DTOs;
 using System.Text;
 using System.Text.Json;
+using Backend.Extensions;
 
 
 namespace Backend.Endpoints
@@ -24,28 +25,82 @@ namespace Backend.Endpoints
                     return Results.BadRequest("Message cannot be empty.");
                 }
 
+                var userMessage = new Message
+                    {
+                        ConversationId = conversationId,
+                        Body = request.Message,
+                        UserSent = true,
+                        ReceivedAt = DateTime.UtcNow
+                    };
+
                 try
                 {
-                    // Retrieve the conversation and agent from the database
+                    // 1) load conversation + agent + scenario
                     var conversation = await dbContext.Conversations
                         .Include(c => c.Agent)
+                        .Include(c => c.Scenario)
                         .FirstOrDefaultAsync(c => c.Id == conversationId);
-                    
-                    if (conversation == null)
-                    {
-                        return Results.NotFound("Conversation not found.");
-                    }
 
-                    // Construct the JSON body for the Python microservice
+                    if (conversation == null)
+                        return Results.NotFound("Conversation not found.");
+                    
+                    var messages = dbContext.Messages
+                        .Where(m => m.ConversationId == conversationId)
+                        .Select(m => new
+                        {
+                            m.Body,
+                            m.ReceivedAt,
+                            m.UserSent
+                        })
+                        .OrderBy(m => m.ReceivedAt)
+                        .ToList();
+
+                    if (messages == null)
+                        {
+                            return Results.NotFound("No messages found.");
+                        }
+                    
+
+                    var agent = conversation.Agent;
+                    var scenario = conversation.Scenario;
+                    
+                    //Make array of messages for the chat history instead of string, so it can be put into the chat template correctly.
+                    List<Object> historyPrompt = [];
+                    foreach (var msg in messages)
+                        {
+                            historyPrompt.Add(new
+                            {
+                                Sender = msg.UserSent ? "user" : "assistant",
+                                Message = msg.Body
+                            });
+                        }
                     var requestBody = new
                     {
-                        prompt = request.Message,
-                        max_length = 256 // Set maximum length for the LLM response
+                        Agent = new
+                        {
+                            Name               = agent.Name,
+                            PromptBody         = agent.PromptBody,
+                            Openness           = agent.Openness,
+                            Conscientiousness  = agent.Conscientiousness,
+                            Extroversion       = agent.Extroversion,
+                            Agreeableness      = agent.Agreeableness,
+                            Neuroticism        = agent.Neuroticism
+                        },
+                        Scenario = new
+                        {
+                            Name               = scenario.Name,
+                            SettingPrompt      = scenario.SettingPrompt,
+                            ConflictPrompt     = scenario.ConflictPrompt,
+                            AdditionalPrompt   = scenario.AdditionalPrompt ?? ""
+                        },
+                        History = historyPrompt,
+                        Prompt     = request.Message,
+                        MaxLength = 8192
                     };
 
                     var jsonBody = JsonSerializer.Serialize(requestBody);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-
+                    // HF means that it tries to access the docker container named huggingface
                     var client = httpClientFactory.CreateClient("HF");
 
                     // Send request to the Python microservice to generate the response
@@ -59,21 +114,17 @@ namespace Backend.Endpoints
 
                     // Parse the generated text from the response
                     var responseJson = await response.Content.ReadAsStringAsync();
-                    var generatedText = JsonDocument.Parse(responseJson).RootElement.GetProperty("result").GetString();
+                    var generatedText = JsonDocument.Parse(responseJson)
+                                                    .RootElement
+                                                    .GetProperty("result")
+                                                    .GetString();
 
                     if (string.IsNullOrEmpty(generatedText))
                     {
                         return Results.Problem("Failed to generate a valid response.");
                     }
 
-                    // Store the user message and agent response in the database
-                    var userMessage = new Message
-                    {
-                        ConversationId = conversationId,
-                        Body = request.Message,
-                        UserSent = true,
-                        ReceivedAt = DateTime.UtcNow
-                    };
+                    // Store the agent response in the database
                     var agentResponse = new Message
                     {
                         ConversationId = conversationId,
@@ -104,7 +155,6 @@ namespace Backend.Endpoints
             app.MapGet("/conversations/{conversationId}/messages", async (int conversationId, PrototypeDbContext dbContext) =>
             {
                 var conversation = await dbContext.Conversations
-                    .Include(c => c.Messages)
                     .FirstOrDefaultAsync(c => c.Id == conversationId);
 
                 if (conversation == null)
@@ -113,7 +163,8 @@ namespace Backend.Endpoints
                 }
 
                 // Retrieve all messages and include who sent them (user/agent) and timestamp
-                var messages = conversation.Messages
+                var messages = dbContext.Messages
+                    .Where(m => m.ConversationId == conversationId)
                     .Select(m => new
                     {
                         m.Body,
@@ -122,6 +173,11 @@ namespace Backend.Endpoints
                     })
                     .OrderBy(m => m.ReceivedAt)
                     .ToList();
+
+                if (messages == null)
+                    {
+                        return Results.NotFound("No messages found.");
+                    }
 
                 return Results.Ok(messages);
             })

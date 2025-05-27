@@ -45,20 +45,20 @@ services:
 
     environment:
       MODEL_NAME: "HuggingFaceTB/SmolLM-1.7B"
-      HF_HUB_OFFLINE: "1"
+      HF_HUB_OFFLINE: "0"
 
     ports:
       - "5000:5000"
     volumes:
       - ./local-models:/usr/src/app/Models
 
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: 1
-#              capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     
     depends_on:
       - db
@@ -81,8 +81,5 @@ services:
 
     volumes:
       - p6_db_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-
 volumes:
   p6_db_data:

@@ -15,7 +15,6 @@ public static class MessageMapping
             Body = messageDTO.Message,
             ReceivedAt = DateTime.UtcNow,
             UserSent = true,
-            ConversationId = messageDTO.ConversationId
         };
     }
 

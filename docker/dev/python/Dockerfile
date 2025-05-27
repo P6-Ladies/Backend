@@ -31,4 +31,9 @@ EXPOSE 5000
 
 # Run Python microservice
 # 5) Use the script as the CMD because it will fail otherwise.
+RUN sed -i 's/\r$//' docker/dev/python/entrypoint.sh
+
+# 6) Make the python path explicit
+ENV PYTHONPATH="/usr/src/app/src"
+
 CMD ["/usr/src/app/docker/dev/python/entrypoint.sh"]

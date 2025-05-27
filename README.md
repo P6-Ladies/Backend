@@ -30,6 +30,7 @@ This repository contains the backend for the P6-Project. It uses:
 -   **.NET 8 SDK** installed (if you want to run or develop locally without Docker).
     
 -   **PostgreSQL** (if you want to run the database locally, though Docker is recommended).
+-   **Be mindful that** the system uses an LLM that requires at least 16GB VRAM and will probably not run on a standard laptop. 
 
 ## Getting Started
 1.  **Clone or Download** this repository so that you have the code available on your machine.
