@@ -63,7 +63,8 @@ public abstract class DbSeeder
     {
         var scenario = new Scenario
         {
-            UserId = user.Id
+            UserId = user.Id,
+            Name = "Test Scenario",
         };
         dbContext.Scenarios.Add(scenario);
         dbContext.SaveChanges();
